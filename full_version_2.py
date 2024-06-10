@@ -1,7 +1,7 @@
 import openpyxl
 from openpyxl.styles import PatternFill
 import random
-
+import os
 from openpyxl import Workbook
 from datetime import datetime
 from selenium import webdriver
@@ -14,9 +14,14 @@ import re
 
 import psutil
 import subprocess
-import winsound
+
+#import winsound
 
 red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+
+
+#chrome functions
+"""
 def is_chrome_running():
     # Check for running chrome instances
     for process in psutil.process_iter(['name']):
@@ -36,6 +41,28 @@ def launch_chrome_in_debug_mode():
     subprocess.Popen([chrome_path, '--remote-debugging-port=9222', '--user-data-dir="C:\\users\\{os.getlogin()}\\AppData\\local\\Google\\chrome\\User Data"'])
     print("Chrome launched in debugging mode on port 9222.")
     
+"""
+
+#Fire fox Functions
+def is_firefox_running():
+    # Check for running Firefox instances
+    for process in psutil.process_iter(['name']):
+        if process.info['name'] and 'firefox' in process.info['name'].lower():
+            return True
+    return False
+
+def prompt_user_to_close_firefox():
+    # Prompt the user to close all Firefox instances
+    while is_firefox_running():
+        input("Firefox is running. Please close all Firefox instances and press Enter to continue...")
+    print("All Firefox instances are closed.")
+
+def launch_firefox_in_debug_mode():
+    # Launch Firefox in debugging mode
+    firefox_path = '/usr/bin/firefox'  # Path to Firefox executable
+    user_data_dir = os.path.expanduser('~/.mozilla/firefox/debug-profile')  # Update this path if necessary
+    subprocess.Popen([firefox_path, '-start-debugger-server', '9222', '-profile', user_data_dir])
+    print("Firefox launched in debugging mode on port 9222.")
     
     
     
@@ -135,7 +162,8 @@ def get_employee_data_from_excel(input_path):
                 button.click()
             else:
                 print("Button not found")
-                winsound.Beep(600,1000) 
+                #winsound.Beep(600,1000) 
+                linux_beep(500,1000)
                 continue
 
             # Wait for the new content to load
@@ -230,7 +258,9 @@ def get_employee_data_from_excel(input_path):
             
             except Exception as e:
                     print("New content did not load within the wait time:", e)
-                    winsound.Beep(700,1000)
+                    #winsound.Beep(700,1000)
+                    linux_beep(500,1000)
+                    
                     continue #  The flow should continue and ignore any exceptions as the exceptions are mainly generated pair Tracking Number 
                 
         
@@ -293,34 +323,38 @@ def modify_time_if_before_10(datetime_str):
     
     return modified_datetime_str
 
-
+def linux_beep(frequency, duration):
+    os.system(f"beep -f {frequency} -l {duration}")
 
 print('Starting Program .... ')
 
+if is_firefox_running():
+    prompt_user_to_close_firefox()
+launch_firefox_in_debug_mode()
+
+"""
 if is_chrome_running():
     prompt_user_to_close_chrome()
 launch_chrome_in_debug_mode()
+"""
 
 
 # Set up Chrome options to connect to the running instance
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+#chrome_options = webdriver.ChromeOptions()
+#chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
 
 # Initialize the Chrome driver with the options
-driver = webdriver.Chrome(options=chrome_options)
+#driver = webdriver.Chrome(options=chrome_options)
 
+# set up firefox options to connect to a running firefox instance 
+firefox_options =webdriver.FirefoxOptions()
+firefox_options.add_argument("-devtools")
+firefox_options.add_argument("--start-debugger-server" "9222")
+
+driver=webdriver.Firefox(options=firefox_options)
 time_difference_per_user = [] 
 shipment_numbers= []
 pattern = re.compile(r'^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
-#is_random="10"
-#while  True :
-#    is_random = input("If you want a random sample enter 1 \nif you want a full sample enter 2  ")  
-#    if is_random in ["1","2"]:
-#        break
-    
-
-# Get the date from the user
-#date = input("Enter the date (YYYY/MM/DD): ")
 
 # Get the tracking numbers from the Excel files and generate URLs
 input_path= input ("Enter The Path of input Excel File that contains Names , Pathes and Dates\n")
