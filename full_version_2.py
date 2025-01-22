@@ -1,3 +1,4 @@
+import os
 import openpyxl
 from openpyxl.styles import PatternFill
 import random
@@ -17,27 +18,89 @@ import subprocess
 import winsound
 
 red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+
+debugging_mode_string =""
+# the first version of code was working on single chrome windows at a time 
+# newer version will allow default profile and allow the user to still using another browser windows 
+''' 
+#The following function chekcs for any running instance of chrome
 def is_chrome_running():
     # Check for running chrome instances
     for process in psutil.process_iter(['name']):
         if process.info['name'] and 'chrome' in process.info['name'].lower():
             return True
     return False
+'''
 
+
+'''
+#As the newer version allows the user to still use browser , No need To close any running instances
 def prompt_user_to_close_chrome():
     # Prompt the user to close all chrome instances
     while is_chrome_running():
         input("Chrome is running. Please close all Chrome instances and press Enter to continue...")
     print("All Chrome instances are closed.")
+'''
 
-def launch_chrome_in_debug_mode():
+# The following code for version 1 , it's then modified for version2 in launch_browser_in_debug_mode() funcion
+'''
+def launch_chrome_in_debug_mode(): #only for first version
     # Launch Chrome in debugging mode
     chrome_path = 'C:/Program Files/Google/Chrome/Application/chrome.exe'  # Update this path if necessary
     subprocess.Popen([chrome_path, '--remote-debugging-port=9222', '--user-data-dir="C:\\users\\{os.getlogin()}\\AppData\\local\\Google\\chrome\\User Data"'])
     print("Chrome launched in debugging mode on port 9222.")
+'''    
+
+def start_chrome_session():
+    chrome_path = "C:\\Program Files\\Google\\Chrome\\Application"
+    os.environ["PATH"] = os.pathsep + chrome_path
+    time.sleep(0.5)
     
+    # Ensure the debugging command is properly defined
+    cmd = debugging_mode_string  # Example: "chrome.exe --remote-debugging-port=9222 --user-data-dir='C:\\selenium\\'"
     
+    if not cmd:
+        print("Debugging mode command is empty. Check the configuration.")
+        return
+
+    try:
+        # Use subprocess.Popen to start Chrome in the background
+        process = subprocess.Popen(cmd, shell=True)
+        print(f"Chrome session started with PID: {process.pid}")
+    except Exception as e:
+        print(f"Error starting Chrome session: {e}")
     
+
+def start_edge_session():
+    edge_path="c:\\program files (x86)\\Microsoft\\Edge\\Application"
+
+    os.environ["PATH"]+=os.pathsep + edge_path
+    time.sleep(0.5)
+    # Ensure the debugging command is properly defined
+    cmd = debugging_mode_string  # Example: "chrome.exe --remote-debugging-port=9222 --user-data-dir='C:\\selenium\\'"
+    
+    if not cmd:
+        print("Debugging mode command is empty. Check the configuration.")
+        return
+
+    try:
+        # Use subprocess.Popen to start Chrome in the background
+        process = subprocess.Popen(cmd, shell=True)
+        print(f"Chrome session started with PID: {process.pid}")
+    except Exception as e:
+        print(f"Error starting Chrome session: {e}")
+
+
+#The Modfied version of the function that runs the browsers in debugging_mode
+browser_type= input("Enter Browser Name :  chrome or edge")
+
+if browser_type.lower== "chrome" :
+    debugging_mode_string= 'chrome.exe --remote-debugging-port=9222 --user-data-dir="C:\selenium" --no-first-run --no-default-browser-check --profile-directory="Default"'
+    start_chrome_session()
+elif browser_type.lower == "edge":
+    debugging_mode_string='msedge.exe --remote-debugging-port=9222 --user-data-dir="C:\selenium" --no-first-run --no-default-browser-check --profile-directory="Default"'
+    start_edge_session()
+
     
 
 def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_name):
