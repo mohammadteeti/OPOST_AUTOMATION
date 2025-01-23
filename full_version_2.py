@@ -18,8 +18,10 @@ import subprocess
 import winsound
 
 red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
-
+employee_urls = []
 debugging_mode_string =""
+options=""
+driver=""
 # the first version of code was working on single chrome windows at a time 
 # newer version will allow default profile and allow the user to still using another browser windows 
 ''' 
@@ -96,6 +98,9 @@ def start_browser(debugging_string:list):
 
     if browser_type.lower== "chrome" :
         debugging_mode_string=debugging_string[1]
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+        driver = webdriver.Chrome(options=chrome_options)
         start_chrome_session()
     elif browser_type.lower == "edge":
         debugging_mode_string=debugging_string[2]
@@ -358,7 +363,7 @@ def modify_time_if_before_10(datetime_str):
 
 
 
-print('Starting Program .... ')
+
 
 '''
 #in the newer version of code , no need to check for any browser instances running
@@ -367,12 +372,16 @@ if is_chrome_running():
 launch_chrome_in_debug_mode()
 '''
 
+######## Not needed in newer version
+'''
 # Set up Chrome options to connect to the running instance
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
 
 # Initialize the Chrome driver with the options
 driver = webdriver.Chrome(options=chrome_options)
+'''
+#######
 
 time_difference_per_user = [] 
 shipment_numbers= []
@@ -388,16 +397,18 @@ pattern = re.compile(r'^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
 #date = input("Enter the date (YYYY/MM/DD): ")
 
 # Get the tracking numbers from the Excel files and generate URLs
-input_path= input ("Enter The Path of input Excel File that contains Names , Pathes and Dates\n")
-employee_urls = get_employee_data_from_excel(input_path)
+def get_employee_urls():
+    input_path= input ("Enter The Path of input Excel File that contains Names , Pathes and Dates\n")
+    employee_urls = get_employee_data_from_excel(input_path)
 
 # Get the data for each employee from the user
 #employee_data = get_employee_data_from_user(employee_urls)
 
-driver.quit()
+#driver.quit() quitting the driver -> not needed in the newer version
 
 
 if __name__ == "__main__":
+    print('Starting Program .... ')
     with open("config.cfg","r",encoding="UTF-8") as cfg:
         debugging_mode_string= cfg.readline().split(",") #the first line in Config file contains the whole debugging string from which chrome and edge debugging mode are extracted
     cfg.close()
