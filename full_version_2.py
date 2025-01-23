@@ -90,16 +90,16 @@ def start_edge_session():
     except Exception as e:
         print(f"Error starting Chrome session: {e}")
 
+def start_browser(debugging_string:list):
+    #The Modfied version of the function that runs the browsers in debugging_mode
+    browser_type= input("Enter Browser Name :  chrome or edge")
 
-#The Modfied version of the function that runs the browsers in debugging_mode
-browser_type= input("Enter Browser Name :  chrome or edge")
-
-if browser_type.lower== "chrome" :
-    debugging_mode_string= 'chrome.exe --remote-debugging-port=9222 --user-data-dir="C:\selenium" --no-first-run --no-default-browser-check --profile-directory="Default"'
-    start_chrome_session()
-elif browser_type.lower == "edge":
-    debugging_mode_string='msedge.exe --remote-debugging-port=9222 --user-data-dir="C:\selenium" --no-first-run --no-default-browser-check --profile-directory="Default"'
-    start_edge_session()
+    if browser_type.lower== "chrome" :
+        debugging_mode_string=debugging_string[1]
+        start_chrome_session()
+    elif browser_type.lower == "edge":
+        debugging_mode_string=debugging_string[2]
+        start_edge_session()
 
     
 
@@ -360,10 +360,12 @@ def modify_time_if_before_10(datetime_str):
 
 print('Starting Program .... ')
 
+'''
+#in the newer version of code , no need to check for any browser instances running
 if is_chrome_running():
     prompt_user_to_close_chrome()
 launch_chrome_in_debug_mode()
-
+'''
 
 # Set up Chrome options to connect to the running instance
 chrome_options = webdriver.ChromeOptions()
@@ -393,3 +395,14 @@ employee_urls = get_employee_data_from_excel(input_path)
 #employee_data = get_employee_data_from_user(employee_urls)
 
 driver.quit()
+
+
+if __name__ == "__main__":
+    with open("config.cfg","r",encoding="UTF-8") as cfg:
+        debugging_mode_string= cfg.readline().split(",") #the first line in Config file contains the whole debugging string from which chrome and edge debugging mode are extracted
+    cfg.close()
+
+
+    start_browser(debugging_mode_string)
+    os._exit(0)
+
