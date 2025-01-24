@@ -20,8 +20,11 @@ import winsound
 red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 employee_urls = []
 debugging_mode_string =""
-options=""
+
 driver=""
+time_difference_per_user = [] 
+shipment_numbers= []
+pattern = re.compile(r'^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
 # the first version of code was working on single chrome windows at a time 
 # newer version will allow default profile and allow the user to still using another browser windows 
 ''' 
@@ -88,7 +91,7 @@ def start_edge_session():
     try:
         # Use subprocess.Popen to start Chrome in the background
         process = subprocess.Popen(cmd, shell=True)
-        print(f"Chrome session started with PID: {process.pid}")
+        print(f"Edge session started with PID: {process.pid}")
     except Exception as e:
         print(f"Error starting Chrome session: {e}")
 
@@ -96,13 +99,18 @@ def start_browser(debugging_string:list):
     #The Modfied version of the function that runs the browsers in debugging_mode
     browser_type= input("Enter Browser Name :  chrome or edge")
 
-    if browser_type.lower== "chrome" :
+    if browser_type.lower()== "chrome" :
+        print("Starting Chrome Session ... ")
         debugging_mode_string=debugging_string[1]
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
         driver = webdriver.Chrome(options=chrome_options)
         start_chrome_session()
-    elif browser_type.lower == "edge":
+    elif browser_type.lower() == "edge":
+        print("Starting Edge Session ... ")
+        edge_options=webdriver.EdgeOptions()
+        edge_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+        driver=webdriver.Edge(options=edge_options)
         debugging_mode_string=debugging_string[2]
         start_edge_session()
 
@@ -383,9 +391,7 @@ driver = webdriver.Chrome(options=chrome_options)
 '''
 #######
 
-time_difference_per_user = [] 
-shipment_numbers= []
-pattern = re.compile(r'^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
+
 #is_random="10"
 #while  True :
 #    is_random = input("If you want a random sample enter 1 \nif you want a full sample enter 2  ")  
@@ -408,12 +414,13 @@ def get_employee_urls():
 
 
 if __name__ == "__main__":
-    print('Starting Program .... ')
-    with open("config.cfg","r",encoding="UTF-8") as cfg:
-        debugging_mode_string= cfg.readline().split(",") #the first line in Config file contains the whole debugging string from which chrome and edge debugging mode are extracted
-    cfg.close()
-
-
-    start_browser(debugging_mode_string)
-    os._exit(0)
+    try :
+        print('Starting Program .... ')
+        with open("config.cfg","r",encoding="UTF-8") as cfg:
+            debugging_mode_string= cfg.readline().split(",") #the first line in Config file contains the whole debugging string from which chrome and edge debugging mode are extracted
+        cfg.close()
+        start_browser(debugging_mode_string)
+    
+    except Exception as e  : 
+        print(e)
 
