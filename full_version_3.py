@@ -21,11 +21,11 @@ red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="soli
 employee_urls = []
 debugging_mode_string =""
 
-driver=webdriver.Chrome()
+
 time_difference_per_user = [] 
 shipment_numbers= []
 pattern = re.compile(r'^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
-
+driver=webdriver
 name=""
 port=0
 employees=[]
@@ -41,15 +41,16 @@ def start_chrome_session(debugging_string):
     cmd = debugging_string  # Example: "chrome.exe --remote-debugging-port=9222 --user-data-dir='C:\\selenium\\'"
     
     if not cmd:
-        print("Debugging mode command is empty. Check the configuration.")
+        print("Debugging mode command is empty. Check the configuration.\n")
         return
 
     try:
         # Use subprocess.Popen to start Chrome in the background
         process = subprocess.Popen(cmd, shell=True)
-        print(f"Chrome session started with PID: {process.pid}")
+        print(f"Chrome session started with PID: {process.pid}\n")
+        get_employee_urls()
     except Exception as e:
-        print(f"Error starting Chrome session: {e}")
+        print(f"Error starting Chrome session: {e}\n")
     
 
 def start_edge_session(debugging_string):
@@ -61,28 +62,18 @@ def start_edge_session(debugging_string):
     cmd = debugging_string  # Example: "chrome.exe --remote-debugging-port=9222 --user-data-dir='C:\\selenium\\'"
     
     if not cmd:
-        print("Debugging mode command is empty. Check the configuration.")
+        print("Debugging mode command is empty. Check the configuration.\n")
         return
 
     try:
         # Use subprocess.Popen to start Chrome in the background
         process = subprocess.Popen(cmd, shell=True)
-        print(f"Edge session started with PID: {process.pid}")
-        get_employee_data_from_excel()
+        print(f"Edge session started with PID: {process.pid}\n")
+        get_employee_urls()
     except Exception as e:
-        print(f"Error starting Chrome session: {e}")
+        print(f"Error starting Chrome session: {e}\n")
 
-
-def define_driver():
-
-    if browser_name.lower()=="chrome":
-        options=webdriver.ChromeOptions()
-        options.add_experimental_option("debuggingAddress","127.0.0.1"+str(port))
-        driver=webdriver.Chrome(options=options)
-    elif browser_name.lower()=="edge":
-        options=webdriver.EdgeOptions()
-        options.add_experimental_option("debuggingAddress","127.0.0.1"+str(port))
-        driver=webdriver.Edge(options=options)
+        
     
 
         
@@ -117,7 +108,7 @@ def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_n
     # Save the workbook
     file_name = f"{date.replace('/', '-')}_for_{user_name}.xlsx"
     wb.save(file_name)
-    print(f"Excel file '{file_name}' created successfully.")
+    print(f"Excel file '{file_name}' created successfully.\n")
 
 
 def get_employee_data_from_excel(input_path):
@@ -131,6 +122,16 @@ def get_employee_data_from_excel(input_path):
                 #dates[name]=input(f"Enter The Date of the File for {name} in the form mm-dd Ex. 05-27")
             #else:
                 #break 
+    if browser_name.lower()=="chrome":
+        options=webdriver.ChromeOptions()
+        options.debugger_address = "127.0.0.1:"+str(port).strip()
+        driver=webdriver.Chrome(options=options)
+        
+    elif browser_name.lower()=="edge":
+        options=webdriver.EdgeOptions()
+        options.debugger_address = "127.0.0.1:"+str(port).strip()
+        driver=webdriver.Edge(options=options)
+
     wb_input=openpyxl.load_workbook(input_path,data_only=True)
     ws_input=wb_input.active
         
@@ -141,7 +142,7 @@ def get_employee_data_from_excel(input_path):
         path= row[1].value + '.xlsx'
         file_date =row[2].value
         is_random=row[3].value
-        print (f'name : {name} , date : {file_date} , path : {path}')
+        print (f'name : {name} , date : {file_date} , path : {path} , is_random : {is_random}  {type(is_random)}')
         
         time_difference_per_user = [] 
         cod_count_per_user=[]
@@ -156,15 +157,15 @@ def get_employee_data_from_excel(input_path):
             if cell.value:
                 tracking_numbers.append(cell.value)
 
-        if is_random=="1":
-                print("Random of 20 Samples are Chosen")
+        if is_random==1:
+                print("Random of 20 Samples are Chosen\n")
                 tracking_numbers= get_random_tracking_numbers(tracking_numbers) 
         else:
-                print("Full File is Chosen")
+                print("Full File is Chosen\n")
         
         for number in tracking_numbers:
             print(f"{tracking_numbers.index(number)}: Working On {name} with Number : {number} in the Date : {file_date}\n")
-            driver.execute_script(f"window.open('https://opost.ps/resources/shipments?tracking_number=gz-48-003711980', '_self');")
+            driver.execute_script(f"window.open('https://opost.ps/resources/shipments?tracking_number={number}', '_self');")
 
             # Switch to the new tab
             driver.switch_to.window(driver.window_handles[-1])
@@ -178,7 +179,7 @@ def get_employee_data_from_excel(input_path):
                 button = buttons[28]
                 button.click()
             else:
-                print("Button not found")
+                print("Button not found\n")
                 winsound.Beep(600,1000) 
                 continue
 
@@ -219,7 +220,7 @@ def get_employee_data_from_excel(input_path):
 
                         # Iterate through td elements and print their text
                         pending_data = [td.text for td in td_elements]
-                        print(f"{pending_data[1]} {pending_data[3]}")
+                        print(f"{pending_data[1]} {pending_data[3]}\n")
                         
                         if not is_first_time_driver_pen_detected:
                             if pending_data[1] == pending_data[3]:
@@ -251,21 +252,21 @@ def get_employee_data_from_excel(input_path):
                 time1 = datetime.strptime(first_pending_of_driver, "%Y-%m-%d %H:%M:%S").time()                      #   extract the time only from the full date-time format of driver Pending status 
                 time2 = datetime.strptime(first_pending_of_employee, "%Y-%m-%d %H:%M:%S").time()                    #   extract the time only from the full date-time format of employee Pending status 
 
-                print(f"Time1 {time1}")
-                print(f"Time2 {time2}")
+                print(f"Time1 {time1}\n")
+                print(f"Time2 {time2}\n")
                 
                 # Convert the time components to timedelta objects 
                 time1_delta = timedelta(hours=time1.hour, minutes=time1.minute, seconds=time1.second)
                 time2_delta = timedelta(hours=time2.hour, minutes=time2.minute, seconds=time2.second)
 
-                print(f"Timedelta1 {time1_delta}")
-                print(f"Timedelta2 {time2_delta}")
+                print(f"Timedelta1 {time1_delta}\n")
+                print(f"Timedelta2 {time2_delta}\n")
                 # Calculate the absolute difference in minutes between the two time components
                 time_difference = abs(time2_delta - time1_delta)
                 difference_in_minutes = time_difference.total_seconds() / 60
 
                 # Print the difference in minutes
-                print(f"The difference in minutes is: {difference_in_minutes:.2f}")
+                print(f"The difference in minutes is: {difference_in_minutes:.2f}\n")
                 time_difference_per_user.append(round(difference_in_minutes,2))
                 if cod_count > 0 :
                     cod_count_per_user.append(cod_count)
@@ -273,7 +274,7 @@ def get_employee_data_from_excel(input_path):
             
             
             except Exception as e:
-                    print("New content did not load within the wait time:", e)
+                    print("New content did not load within the wait time:", e,"\n")
                     winsound.Beep(700,1000)
                     continue #  The flow should continue and ignore any exceptions as the exceptions are mainly generated pair Tracking Number 
                 
@@ -289,7 +290,7 @@ def get_random_tracking_numbers(tracking_numbers_list):
         random_numbers = random.sample(tracking_numbers_list, 20)
         return random_numbers
     else:
-        print("The list does not contain enough elements. Returning the whole tracking numbers list ")
+        print("The list does not contain enough elements. Returning the whole tracking numbers list \n")
         return  tracking_numbers_list
     
 
@@ -328,7 +329,7 @@ def get_employee_urls():
 
 if __name__ == "__main__":
     try :
-        print('Starting Program .... ')
+        print('Starting Program .... \n')
         with open("config.cfg","r",encoding="UTF-8") as cfg:
             debugging_mode_string= cfg.readline().split(",") #the first line in Config file contains the whole debugging string from which chrome and edge debugging mode are extracted
             port=cfg.readline().split(",")[1]
@@ -343,7 +344,7 @@ if __name__ == "__main__":
         elif browser_name.lower()=="edge":
             start_edge_session(debugging_string=debugging_mode_string[2])
         else:
-            print(f"{browser_name} is not a valid browser name!")
+            print(f"{browser_name} is not a valid browser name!\n")
     
     except Exception as e  : 
-        print(e)
+        print(f"{e}\n")
