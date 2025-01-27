@@ -131,7 +131,7 @@ def get_employee_data_from_excel(input_path):
         options=webdriver.EdgeOptions()
         options.debugger_address = "127.0.0.1:"+str(port).strip()
         driver=webdriver.Edge(options=options)
-
+    
     wb_input=openpyxl.load_workbook(input_path,data_only=True)
     ws_input=wb_input.active
         
