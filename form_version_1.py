@@ -140,7 +140,13 @@ def run_script ():
         messagebox.showerror("Error","Please Enter Employee Text File Path")
         return
     
-
+    if not entry_username.get():
+        messagebox.showerror("Error","Please Enter UserName/Email of your  Optimus Account")
+        return
+    if not entry_password.get():
+        messagebox.showerror("Error","Please Enter Password of your  Optimus Account")
+        return
+    
     def main_processing_code():
         
         try :
@@ -212,6 +218,8 @@ def get_employee_data_from_excel(input_path):
 
             driver=webdriver.Chrome(options=options)
             print("webdriver instatiated correctly")
+
+
         except Exception as e:
             print(f"{e}")
 
@@ -224,6 +232,16 @@ def get_employee_data_from_excel(input_path):
 
         driver=webdriver.Edge(options=options)
         print("webdriver instatiated correctly")
+
+
+    driver.get("https://opost.ps/login")
+    time.sleep(1)
+    driver.find_element(By.ID,"email").send_keys(entry_username.get())
+    driver.find_element(By.ID,"password").send_keys(entry_password.get())
+
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    print("Login submitted!")
+
 
     wb_input=openpyxl.load_workbook(str(input_path).strip(),data_only=True)
 
@@ -499,6 +517,29 @@ chrome_radio.pack(side=tk.LEFT, padx=10)
 edge_radio = tk.Radiobutton(browser_frame, text="Edge", variable=browser_var, value="Edge",selectcolor="#ff33ff")
 edge_radio.pack(side=tk.LEFT, padx=10)
 
+#create login frame and controls 
+
+# Create login login_frame
+login_frame = tk.Frame(root, padx=20, pady=20)
+login_frame.pack(pady=20)
+
+# Username label and entry
+label_username = tk.Label(login_frame, text="Username:")
+label_username.grid(row=0, column=0, sticky="w")
+entry_username = tk.Entry(login_frame,width=40)
+entry_username.grid(row=0, column=1)
+
+# Password label and entry
+label_password = tk.Label(login_frame, text="Password:")
+label_password.grid(row=1, column=0, sticky="w")
+entry_password = tk.Entry(login_frame, show="*",width=40)
+entry_password.grid(row=1, column=1)
+
+# Login button 
+#the login process is done in the run button
+#button_login = tk.Button(login_frame, text="Login")
+#button_login.grid(row=2, column=0, columnspan=2, pady=10)
+
 # Create a button to run the script
 run_button = tk.Button(root, text="Run", command=run_script)
 run_button.pack(pady=10)
@@ -506,6 +547,8 @@ run_button.pack(pady=10)
 #create a button to stop the script
 stop_button = tk.Button(root,text="Stop",command=stop_main_processing_thread)
 stop_button.pack(padx=10 ,pady=10)
+
+
 # Create a log screen
 log_frame = tk.Frame(root, padx=10, pady=10)
 log_frame.pack(fill=tk.BOTH, expand=True)
