@@ -207,8 +207,8 @@ def get_employee_data_from_excel(input_path):
             options=webdriver.ChromeOptions()
             options.debugger_address = "127.0.0.1:"+str(port).strip()
             options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
-            options.add_argument("--disable-gpu")  # Prevents rendering issues
-            options.add_argument("--disable-renderer-accessibility")
+ 
+
 
             driver=webdriver.Chrome(options=options)
             print("webdriver instatiated correctly")
@@ -219,11 +219,8 @@ def get_employee_data_from_excel(input_path):
         options=webdriver.EdgeOptions()
         options.debugger_address = "127.0.0.1:"+str(port).strip()
         options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
-        options.add_argument("--disable-gpu")  # Prevents rendering issues
-        options.add_argument("--disable-renderer-accessibility")
-        options.add_argument("--disable-backgrounding-occluded-windows")  # Prevent minimizing issues
-        options.add_argument("--disable-background-timer-throttling")  # Keep scripts running
-        options.add_argument("--disable-background-networking")  # Keep network active}
+        
+
 
         driver=webdriver.Edge(options=options)
         print("webdriver instatiated correctly")
