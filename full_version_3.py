@@ -125,11 +125,22 @@ def get_employee_data_from_excel(input_path):
     if browser_name.lower()=="chrome":
         options=webdriver.ChromeOptions()
         options.debugger_address = "127.0.0.1:"+str(port).strip()
+        options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
+        options.add_argument("--disable-gpu")  # Prevents rendering issues
+        options.add_argument("--disable-renderer-accessibility")
+
+
         driver=webdriver.Chrome(options=options)
         
     elif browser_name.lower()=="edge":
         options=webdriver.EdgeOptions()
         options.debugger_address = "127.0.0.1:"+str(port).strip()
+        options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
+        options.add_argument("--disable-gpu")  # Prevents rendering issues
+        options.add_argument("--disable-renderer-accessibility")
+
+
+
         driver=webdriver.Edge(options=options)
     
     wb_input=openpyxl.load_workbook(input_path,data_only=True)

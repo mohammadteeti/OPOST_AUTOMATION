@@ -27,12 +27,12 @@ red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="soli
 employee_urls = []
 debugging_mode_string =""
 
-
+employee_names=[]
 time_difference_per_user = [] 
 shipment_numbers= []
 pattern = re.compile(r'^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
 
-
+stop_event =  threading.Event()
 
 
 name=""
@@ -142,14 +142,23 @@ def run_script ():
     
 
     def main_processing_code():
+        
         try :
             print('Starting Program .... \n')
+            print("Reading configuration file ...\n")
             with open("config.cfg","r",encoding="UTF-8") as cfg:
                 global port
                 debugging_mode_string= cfg.readline().split(",") #the first line in Config file contains the whole debugging string from which chrome and edge debugging mode are extracted
                 port=cfg.readline().split(",")[1]
                 print (f"{debugging_mode_string[0]}\n{debugging_mode_string[1]}\n{debugging_mode_string[2]}\n {port}")
                 cfg.close()
+
+            print("Reading employee names file ...\n")
+            with open("employee_names.txt","r",encoding="utf-8") as f:
+                global employee_names
+                employee_names= f.readlines()
+                f.close()
+
         
 
             if  browserChoice.lower()=="chrome":
@@ -162,8 +171,16 @@ def run_script ():
         except Exception as e: 
             messagebox.showerror("Error" , e)
             print(f"{e}\n")
+    
+    global thread
+    thread = threading.Thread(target=main_processing_code,daemon=True)
+    stop_event.clear()
+    thread.start()
 
-    threading.Thread(target=main_processing_code).start()
+
+def stop_main_processing_thread():
+    stop_event.set()
+
 
 
 
@@ -189,6 +206,10 @@ def get_employee_data_from_excel(input_path):
         try:
             options=webdriver.ChromeOptions()
             options.debugger_address = "127.0.0.1:"+str(port).strip()
+            options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
+            options.add_argument("--disable-gpu")  # Prevents rendering issues
+            options.add_argument("--disable-renderer-accessibility")
+
             driver=webdriver.Chrome(options=options)
             print("webdriver instatiated correctly")
         except Exception as e:
@@ -197,6 +218,13 @@ def get_employee_data_from_excel(input_path):
     elif browserChoice.lower()=="edge":
         options=webdriver.EdgeOptions()
         options.debugger_address = "127.0.0.1:"+str(port).strip()
+        options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
+        options.add_argument("--disable-gpu")  # Prevents rendering issues
+        options.add_argument("--disable-renderer-accessibility")
+        options.add_argument("--disable-backgrounding-occluded-windows")  # Prevent minimizing issues
+        options.add_argument("--disable-background-timer-throttling")  # Keep scripts running
+        options.add_argument("--disable-background-networking")  # Keep network active}
+
         driver=webdriver.Edge(options=options)
         print("webdriver instatiated correctly")
 
@@ -206,6 +234,8 @@ def get_employee_data_from_excel(input_path):
 
 
     for i,row  in enumerate(ws_input): #skip first row (Headers)
+        if stop_event.is_set():
+                break
         if i==0 :
             continue
         name =row[0].value
@@ -234,6 +264,8 @@ def get_employee_data_from_excel(input_path):
                 print("Full File is Chosen\n")
         
         for number in tracking_numbers:
+            if stop_event.is_set():
+                break
             print(f"{tracking_numbers.index(number)}: Working On {name} with Number : {number} in the Date : {file_date}\n")
             try:
                 driver.execute_script(f"window.open('https://opost.ps/resources/shipments?tracking_number={number}', '_self');")
@@ -302,7 +334,7 @@ def get_employee_data_from_excel(input_path):
                             
                         if not is_first_time_employee_pen_detected :
                             if is_first_time_driver_pen_detected:
-                                if '291لارا' in  pending_data[1]  or '296هبة' in  pending_data[1] or '290رند' in  pending_data[1] or '294حمزة' in  pending_data[1] or 'احمد295' in  pending_data[1] or 'متابعة عوالق' in  pending_data[1] :
+                                if name in pending_data[1] :# check_if_name_occures_in_pending_line(pending_data[1]): #'291لارا' in  pending_data[1]  or '296هبة' in  pending_data[1] or '290رند' in  pending_data[1] or '294حمزة' in  pending_data[1] or 'احمد295' in  pending_data[1] or 'متابعة عوالق' in  pending_data[1] :
                                     first_pending_of_employee=modify_time_if_before_10(pending_data[0])
                                     is_first_time_employee_pen_detected=True
                                 #break
@@ -392,8 +424,16 @@ def modify_time_if_before_10(datetime_str):
     
     return modified_datetime_str
 
-
-
+# why do we have to check for all employees while one employee name is known ????
+def check_if_name_occures_in_pending_line(pending_str :str):
+    print (f"\npending str:{pending_str}")
+    for name in employee_names:
+        print(f"searching  for \n{name} in {pending_str}")
+        if name in pending_str: 
+            print(f"Employee Name Found : {name}")
+            return True
+    return False
+    
 def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_name):
     # Create a new workbook and select the active worksheet
     wb = Workbook()
@@ -437,7 +477,7 @@ def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_n
 # Create the main application window
 root = tk.Tk()
 root.title("Browser and File Selector")
-root.geometry("600x400")
+root.geometry("600x600")
 root.resizable(False, False)
 
 # Create a frame for the file selection
@@ -466,6 +506,9 @@ edge_radio.pack(side=tk.LEFT, padx=10)
 run_button = tk.Button(root, text="Run", command=run_script)
 run_button.pack(pady=10)
 
+#create a button to stop the script
+stop_button = tk.Button(root,text="Stop",command=stop_main_processing_thread)
+stop_button.pack(padx=10 ,pady=10)
 # Create a log screen
 log_frame = tk.Frame(root, padx=10, pady=10)
 log_frame.pack(fill=tk.BOTH, expand=True)
