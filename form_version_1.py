@@ -250,8 +250,19 @@ def get_employee_data_from_excel(input_path):
     try :
             driver.get("https://opost.ps/login")
             time.sleep(1)
-            driver.find_element(By.ID,"email").send_keys(entry_username.get())
-            driver.find_element(By.ID,"password").send_keys(entry_password.get())
+            email_field=driver.find_element(By.ID,"email")
+            password_field = driver.find_element(By.ID,"password")
+
+            time.sleep(1)
+            # Use JavaScript to clear autofilled values
+            driver.execute_script("document.getElementById('email').value = '';")
+            driver.execute_script("document.getElementById('password').value = '';")
+
+            
+            time.sleep(2)
+
+            email_field.send_keys(entry_username.get())
+            password_field.send_keys(entry_password.get())
 
             driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
             print("Login submitted!") 
