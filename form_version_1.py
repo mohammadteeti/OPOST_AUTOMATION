@@ -16,7 +16,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+from selenium.common.exceptions import NoSuchElementException
 import re 
 import psutil
 import random 
@@ -86,7 +86,7 @@ def start_chrome_session(debugging_string):
         employee_urls= get_employee_data_from_excel(input_path)
     except Exception as e:
         print(f"Error starting Chrome session: {e}\n")
-    
+        light_label.config(background="#FF0000")
 
 def start_edge_session(debugging_string):
     
@@ -111,6 +111,7 @@ def start_edge_session(debugging_string):
         employee_urls=get_employee_data_from_excel(input_path)
     except Exception as e:
         print(f"Error starting Chrome session: {e}\n")
+        light_label.config(background="#FF0000")
 ##########################################################################################################################################
 
 
@@ -176,6 +177,7 @@ def run_script ():
     
         except Exception as e: 
             messagebox.showerror("Error" , e)
+            light_label.config(background="#FF0000")
             print(f"{e}\n")
     
     global thread
@@ -186,6 +188,12 @@ def run_script ():
 
 def stop_main_processing_thread():
     stop_event.set()
+    kill_process_by_name("msedgewebview2.exe")
+    kill_debugging_chrome()
+    kill_debugging_edge()
+    light_label.config(background="#FF0000")
+    
+
 
 
 
@@ -206,8 +214,10 @@ def get_employee_data_from_excel(input_path):
             #else:
                 #break 
     global  driver
-    driver=webdriver
+    global browserChoice
+    browserChoice=browser_var.get()
     print (f" Choice : {browserChoice.lower()}")
+    
     if browserChoice.lower()=="chrome":
         try:
             options=webdriver.ChromeOptions()
@@ -218,10 +228,12 @@ def get_employee_data_from_excel(input_path):
 
             driver=webdriver.Chrome(options=options)
             print("webdriver instatiated correctly")
+            light_label.config(background="#00FF00")
 
-
+            
         except Exception as e:
-            print(f"{e}")
+            print(f"ُError in get_employee_data_from_excel Function : \n  {e}")
+            light_label.config(background="#FF0000")
 
     elif browserChoice.lower()=="edge":
         options=webdriver.EdgeOptions()
@@ -232,15 +244,22 @@ def get_employee_data_from_excel(input_path):
 
         driver=webdriver.Edge(options=options)
         print("webdriver instatiated correctly")
+        light_label.config(background="#00FF00")
 
+#try to login first to avoid selenium crash   exception in reading tracking number 
+    try :
+            driver.get("https://opost.ps/login")
+            time.sleep(1)
+            driver.find_element(By.ID,"email").send_keys(entry_username.get())
+            driver.find_element(By.ID,"password").send_keys(entry_password.get())
 
-    driver.get("https://opost.ps/login")
-    time.sleep(1)
-    driver.find_element(By.ID,"email").send_keys(entry_username.get())
-    driver.find_element(By.ID,"password").send_keys(entry_password.get())
-
-    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-    print("Login submitted!")
+            driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+            print("Login submitted!") 
+    except NoSuchElementException :
+            #if email element is not found , then most probably the user is already logged in 
+            print(f"\nMay be you are logged in already !") 
+            light_label.config(background="#FF0000")
+            
 
 
     wb_input=openpyxl.load_workbook(str(input_path).strip(),data_only=True)
@@ -285,7 +304,8 @@ def get_employee_data_from_excel(input_path):
             try:
                 driver.execute_script(f"window.open('https://opost.ps/resources/shipments?tracking_number={number}', '_self');")
             except Exception as e:
-                print(f"{e}")
+                print(f" Error in get_employee_data_from_excel Function : \n  {e}")
+                light_label.config(background="#FF0000")
 
             # Switch to the new tab
             driver.switch_to.window(driver.window_handles[-1])
@@ -294,13 +314,16 @@ def get_employee_data_from_excel(input_path):
             time.sleep(3)
 
             # Find the 29th button on the page and click it
-            buttons = driver.find_elements(By.TAG_NAME, "button")
-            if len(buttons) > 28:
-                button = buttons[28]
-                button.click()
-            else:
-                print("Button not found\n")
-                winsound.Beep(600,1000) 
+            try :
+                buttons = driver.find_elements(By.TAG_NAME, "button")
+                if len(buttons) > 28:
+                    button = buttons[28]
+                    button.click()
+                else:
+                    print("Button not found\n")
+                    winsound.Beep(600,1000) 
+                    continue
+            except Exception as e :
                 continue
 
             # Wait for the new content to load
@@ -481,13 +504,68 @@ def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_n
     file_name = f"{date.replace('/', '-')}_for_{user_name}.xlsx"
     wb.save(file_name)
     print(f"Excel file '{file_name}' created successfully.\n")
+    winsound.Beep(900,200)
+    time.sleep(0.2)
+    winsound.Beep(900,200)
+    time.sleep(0.2)
+    winsound.Beep(900,200)
 
 
+#End the Edge webview of each run 
+def kill_process_by_name(process_name):
+    for process in psutil.process_iter(['pid', 'name']):
+        if process.info['name'] and process_name.lower() in process.info['name'].lower():
+            try:
+                psutil.Process(process.info['pid']).terminate()
+                print(f"Killed process: {process.info['name']} (PID: {process.info['pid']})")
+            except psutil.NoSuchProcess as e1:
+                print(f"error in kill_debugging_edge {e1} ")
+                light_label.config(background="#FF0000")
+            except psutil.AccessDenied:
+                print(f"Access denied for process: {process.info['name']} (PID: {process.info['pid']})")
+                light_label.config(background="#FF0000")
+            except Exception as e:
+                print(f"Error terminating process {process.info['name']}: {e}")
+                light_label.config(background="#FF0000")
+
+
+def kill_debugging_chrome():
+    for process in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
+        try:
+            if "chrome.exe" in process.info['name'].lower():
+                cmdline = " ".join(process.info['cmdline']) if process.info['cmdline'] else ""
+                
+                # Check if Chrome was launched with remote debugging port 9222
+                if "--remote-debugging-port=9222" in cmdline:
+                    print(f"Killing debugging Chrome process: {process.info['name']} (PID: {process.info['pid']})")
+                    psutil.Process(process.info['pid']).terminate()
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
+            print(f"error in kill_debugging_edge {e} ")
+            light_label.config(background="#FF0000")
+
+
+def kill_debugging_edge():
+    for process in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
+        try:
+            if "msedge.exe" in process.info['name'].lower():
+                cmdline = " ".join(process.info['cmdline']) if process.info['cmdline'] else ""
+                
+                # Check if Edge was launched with remote debugging port 9222
+                if "--remote-debugging-port=9222" in cmdline:
+                    print(f"Killing Edge debugging process: {process.info['name']} (PID: {process.info['pid']})")
+                    psutil.Process(process.info['pid']).terminate()
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess)as e:
+            light_label.config(background="#FF0000")
+            print(f"error in kill_debugging_edge {e} ")
 #####################################################################################################################################
 #####################################################################################################################################
 
 
 ##################################### Create Main Screen Window with widgets ########################################################
+
+kill_debugging_chrome()
+kill_debugging_edge()
+kill_process_by_name("msedgewebview2.exe")
 
 # Create the main application window
 root = tk.Tk()
@@ -508,13 +586,16 @@ path_box.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
 # Create a frame for browser selection
 browser_frame = tk.Frame(root, padx=10, pady=10)
 browser_frame.pack(fill=tk.X)
-
-browser_var = tk.StringVar()
+# create red- and green 
+light_label=tk.Label(file_frame,text="",width=3,height=3,background="#FF0000")
+light_label.pack(padx=20)
+# Create a Tkinter variable
+browser_var = tk.StringVar(value="xxx")  # Set to a value that doesn't match any button
 
 chrome_radio = tk.Radiobutton(browser_frame, text="Chrome", variable=browser_var, value="Chrome")
 chrome_radio.pack(side=tk.LEFT, padx=10)
 
-edge_radio = tk.Radiobutton(browser_frame, text="Edge", variable=browser_var, value="Edge",selectcolor="#ff33ff")
+edge_radio = tk.Radiobutton(browser_frame, text="Edge", variable=browser_var, value="Edge")
 edge_radio.pack(side=tk.LEFT, padx=10)
 
 #create login frame and controls 
