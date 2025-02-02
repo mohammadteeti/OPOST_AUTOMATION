@@ -49,9 +49,17 @@ This provides flexibility to users with different preferences and technical expe
 - **Supports Multiple Browsers**
 
   The program works with both Edge and Chrome, offering a selection mechanism to choose the browser type. This prevents browser overload, allowing users to perform other tasks on one browser while running the process in another.
+
+- **Logging Mechanism for Tracking Flow and Errors**
   
+    A logging window continuously streams the flow of the process, displaying printed outputs as well as stack traces for error tracking. This allows for real-time monitoring and troubleshooting of the system's activities. 
+- **Start/Stop Features**
 
+    The system allows for multiple start and stop actions during runtime, preventing fatal crashes and ensuring smooth operation even if the process needs to be paused or restarted.
+  
+- **Configurations File**
 
+    The code relies on a .cfg configuration file to initiate the browser in different modes and on various hosts, enabling multiple running scenarios and providing flexibility for different use cases.
 
 
 
