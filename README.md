@@ -73,9 +73,9 @@ This provides flexibility to users with different preferences and technical expe
 ![GUI FORM](https://github.com/mohammadteeti/OPOST_AUTOMATION/blob/master/Media/OPOST_AUTOMATION.JPG)
 
 
+# Video :
 
-
-
+https://github.com/user-attachments/assets/ee474d1a-61b1-4d68-8fd3-9403f8e7b7ff
 
 
 
