@@ -36,6 +36,21 @@ This provides flexibility to users with different preferences and technical expe
 
 
 
+### Features:
+
+- **Browsing Files for Different Employees**
+
+  The program allows the user to easily select the Excel file they wish to work with, eliminating the need for manually entering excessive data.
+
+- **Login to OPOST System**
+
+  The program uses OPOST user credentials to automatically log in, streamlining the login process.
+
+- **Supports Multiple Browsers**
+
+  The program works with both Edge and Chrome, offering a selection mechanism to choose the browser type. This prevents browser overload, allowing users to perform other tasks on one browser while running the process in another.
+  
+
 
 
 
