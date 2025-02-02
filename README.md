@@ -29,8 +29,8 @@ We provide a well-coded, efficient, and user-friendly system as a quick solution
 
 The solution is offered in two working formats:
 
-- Command Line Interface (CLI)
-- Graphical User Interface (GUI)
+- Command Line Interface (CLI)  *``on master branch ``*
+- Graphical User Interface (GUI) *`` on gui_form_branch ``*
   
 This provides flexibility to users with different preferences and technical expertise.
 
