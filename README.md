@@ -68,6 +68,10 @@ This provides flexibility to users with different preferences and technical expe
 
 
 
+# Image :
+
+![GUI FORM](https://github.com/mohammadteeti/OPOST_AUTOMATION/blob/master/Media/OPOST_AUTOMATION.JPG)
+
 
 
 
