@@ -36,7 +36,7 @@ This provides flexibility to users with different preferences and technical expe
 
 
 
-### Features:
+### Features :
 
 - **Browsing Files for Different Employees**
 
@@ -60,7 +60,10 @@ This provides flexibility to users with different preferences and technical expe
 - **Configurations File**
 
     The code relies on a .cfg configuration file to initiate the browser in different modes and on various hosts, enabling multiple running scenarios and providing flexibility for different use cases.
+  
+- **ٍSimple Notification System**
 
+    The code plays a beep to notify the user about errors in the flow, such as issues with reading shipments or browser connection problems. It also displays a red/green label for quick identification of the issue's status. 
 
 
 
