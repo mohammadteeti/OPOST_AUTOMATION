@@ -1,0 +1,5 @@
+#Ignore all xlsx files
+*.xlsx
+
+#Ignore all pdf file
+*.pdf
