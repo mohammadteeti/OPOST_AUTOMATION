@@ -20,10 +20,19 @@ The reporting process is extremely time-consuming, leading to a backlog of work 
 
 ### Solution :
 
-
 A browser automation program using Selenium WebDriver is introduced to streamline the process, reducing manual effort and significantly improving efficiency.
 
 The process that previously took an entire workday is now completed in an hour or less, even for a large number of shipments.
+
+We provide a well-coded, efficient, and user-friendly system as a quick solution for reporting pending employee QOS.
+
+
+The solution is offered in two working formats:
+
+- Command Line Interface (CLI)
+- Graphical User Interface (GUI)
+  
+This provides flexibility to users with different preferences and technical expertise.
 
 
 
