@@ -512,6 +512,13 @@ def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_n
     # Write the header for the single user
     ws['B1'] = user_name
 
+    #set columns widths 
+    ws.column_dimensions["A"].width=len("COD COUNT = ")
+    ws.column_dimensions["B"].width=len(str(user_name)+" ")
+    ws.column_dimensions["C"].width=len("XXXXXX-XXX-XXXXXXXXX  ")
+    ws.column_dimensions["D"].width=len(" تم التسليم بدون عالق - لا تحسب في التقرير")
+
+
     #define a varianle to count shipments that have been COD without any pending status
     cod_without_pending=0
     # Write the data for the single user
@@ -519,22 +526,27 @@ def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_n
         ws.cell(row=row_num, column=2).value = value
         if value>10 :
             ws.cell(row=row_num, column=2).fill=red_fill
-        
-    for row_num  ,value in enumerate(shipment_numbers,start=2):
-        ws.cell(row=row_num,column=3).value=value
+
         if value == 0 :
             ws.cell(row=row_num,column=4).value="تم التسليم بدون عالق - لا تحسب في التقرير"
             ws.cell(row=row_num,column=4).fill=green_fill
             cod_without_pending=cod_without_pending+1
+    
+        
+    for row_num  ,value in enumerate(shipment_numbers,start=2):
+        ws.cell(row=row_num,column=3).value=value
 
         
     if len(employee_data) == 0 :
         employee_data=[1]
     ws.cell(row=len(employee_data)+3,column=1 ).value="Average = " 
-    ws.cell(row=len(employee_data)+3,column=2 ).value= round(sum(employee_data)/len(employee_data),2)
+    ws.cell(row=len(employee_data)+3,column=2 ).value= round(sum(employee_data)/(len(employee_data)-cod_without_pending),2)
 
     ws.cell(row=len(employee_data)+5,column=1 ).value="COD COUNT = " 
     ws.cell(row=len(employee_data)+5,column=2 ).value=len(cod_count_per_user)
+
+
+    
     # Save the workbook
     file_name = f"{date.replace('/', '-')}_for_{user_name}.xlsx"
     wb.save(file_name)
