@@ -33,7 +33,7 @@ employee_names=[]
 time_difference_per_user = [] 
 shipment_numbers= []
 pattern = re.compile(r'^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
-
+shift_time_T=0
 stop_event =  threading.Event()
 
 
@@ -391,7 +391,7 @@ def get_employee_data_from_excel(input_path):
                         if not is_first_time_employee_pen_detected :
                             if is_first_time_driver_pen_detected:
                                 if name in pending_data[1] :# check_if_name_occures_in_pending_line(pending_data[1]): #'291لارا' in  pending_data[1]  or '296هبة' in  pending_data[1] or '290رند' in  pending_data[1] or '294حمزة' in  pending_data[1] or 'احمد295' in  pending_data[1] or 'متابعة عوالق' in  pending_data[1] :
-                                    first_pending_of_employee=modify_time_if_before_10(pending_data[0])
+                                    first_pending_of_employee=modify_time_if_before_T(pending_data[0])
                                     is_first_time_employee_pen_detected=True
                                 #break
                     if is_first_time_employee_pen_detected: # no need to read the rest or row as the first pending variables are assigned
@@ -468,7 +468,7 @@ def get_random_tracking_numbers(tracking_numbers_list):
         return  tracking_numbers_list
     
 
-def modify_time_if_before_10(datetime_str):
+def modify_time_if_before_T(datetime_str):
     """
     Modify the time part of the datetime string to 10:00:00 if the hour is before 10:00:00.
     
@@ -482,9 +482,9 @@ def modify_time_if_before_10(datetime_str):
     dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
     
     # Check if the hour is before 10
-    if dt.hour < 10:
+    if dt.hour < shift_time_T:
         # Modify the time to 10:00:00
-        dt = dt.replace(hour=10, minute=0, second=0)
+        dt = dt.replace(hour=shift_time_T, minute=0, second=0)
     
     # Convert the datetime object back to a string
     modified_datetime_str = dt.strftime('%Y-%m-%d %H:%M:%S')
@@ -591,6 +591,10 @@ def kill_debugging_chrome():
             light_label.config(background="#FF0000")
 
 
+def update_shift_time(value):
+    global shift_time_T
+    shift_time_T=int(value)
+
 def kill_debugging_edge():
     for process in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
         try:
@@ -604,6 +608,9 @@ def kill_debugging_edge():
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess)as e:
             light_label.config(background="#FF0000")
             print(f"error in kill_debugging_edge {e} ")
+
+
+
 #####################################################################################################################################
 #####################################################################################################################################
 
@@ -644,6 +651,25 @@ chrome_radio.pack(side=tk.LEFT, padx=10)
 
 edge_radio = tk.Radiobutton(browser_frame, text="Edge", variable=browser_var, value="Edge")
 edge_radio.pack(side=tk.LEFT, padx=10)
+
+
+
+# Create a frame for shift time selection
+shift_time_frame = tk.Frame(root, padx=10, pady=10)
+shift_time_frame.pack(fill=tk.X)
+
+# Label for shift time
+shift_time_label = tk.Label(shift_time_frame, text="Shift Time Start (T):")
+shift_time_label.pack(side=tk.LEFT, padx=10)
+
+# Create a Tkinter variable with default value 9
+shift_time_var = tk.IntVar(value=9)
+
+# Dropdown list (OptionMenu) with values 9 and 10
+shift_time_menu = tk.OptionMenu(shift_time_frame, shift_time_var, 9, 10,command=update_shift_time)
+shift_time_menu.pack(side=tk.LEFT, padx=10)
+
+
 
 #create login frame and controls 
 
