@@ -24,6 +24,8 @@ import winsound
 
 
 red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+green_fill =PatternFill(start_color="00FF00",end_color="00FF00",fill_type="solid")
+
 employee_urls = []
 debugging_mode_string =""
 
@@ -366,11 +368,16 @@ def get_employee_data_from_excel(input_path):
                 # Table rows collection  is firstly reversed , to start from the 'Submitted'  status and forth on   
                 # The logic below consists the results to the Pending and COD status types only, other status types are eventually ignored                                           
                 # there is a bug here where the readign start from above
+
+                
+
+
                 for row in reversed(table_row):
 
-                    
+
                     if  "Pending" in row.text and file_date in row.text:
                         td_elements = row.find_elements(By.CSS_SELECTOR, "td")
+
 
                         # Iterate through td elements and print their text
                         pending_data = [td.text for td in td_elements]
@@ -387,25 +394,35 @@ def get_employee_data_from_excel(input_path):
                                     first_pending_of_employee=modify_time_if_before_10(pending_data[0])
                                     is_first_time_employee_pen_detected=True
                                 #break
-                    if "COD Pickup" in row.text and file_date in row.text:
-                        td_elements = row.find_elements(By.CSS_SELECTOR, "td")
+                    if is_first_time_employee_pen_detected: # no need to read the rest or row as the first pending variables are assigned
+                        pending_data=[]
+                        break
 
-                        cod_date= [td.text for td in td_elements]
+                        
+                        
+                    pending_data=[]
+                
+                #new loop to re check for the codpicked up  , but this time without reverse so the pointer will read from above 
+                # as the COD Pickup if ooccured it would be on top
+                for row in table_row:
+                    if "COD Pickup" in row.text and file_date in row.text:
+                        td_elements = row.find_elements(By.CSS_SELECTOR, "td") 
+                        cod_date= [td.text for td in td_elements] # as the page contains more than fixed COD Pickup lable beside the shipments status , we need to point out only the shipment status COD
                         if file_date in cod_date[0]:
                             #winsound.Beep(500,500)
                             cod_count=cod_count+1
                             break
-                        
-                        
-                        
-                    pending_data=[]
+
                     
 
-                        
-                print(f"time of employee {first_pending_of_employee} \ntime of driver {first_pending_of_driver}\n") #   show Pending resluts for both employee and driver
-                time1 = datetime.strptime(first_pending_of_driver, "%Y-%m-%d %H:%M:%S").time()                      #   extract the time only from the full date-time format of driver Pending status 
-                time2 = datetime.strptime(first_pending_of_employee, "%Y-%m-%d %H:%M:%S").time()                    #   extract the time only from the full date-time format of employee Pending status 
-
+                if first_pending_of_employee and first_pending_of_driver:
+                    print(f"time of employee {first_pending_of_employee} \ntime of driver {first_pending_of_driver}\n") #   show Pending resluts for both employee and driver
+                    time1 = datetime.strptime(first_pending_of_driver, "%Y-%m-%d %H:%M:%S").time()                      #   extract the time only from the full date-time format of driver Pending status 
+                    time2 = datetime.strptime(first_pending_of_employee, "%Y-%m-%d %H:%M:%S").time()                    #   extract the time only from the full date-time format of employee Pending status 
+                else:
+                    time1=datetime.strptime("2000-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").time() 
+                    time2=datetime.strptime("2000-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").time() 
+                    
                 print(f"Time1 {time1}\n")
                 print(f"Time2 {time2}\n")
                 
@@ -424,6 +441,7 @@ def get_employee_data_from_excel(input_path):
                 time_difference_per_user.append(round(difference_in_minutes,2))
                 if cod_count > 0 :
                     cod_count_per_user.append(cod_count)
+                    print(cod_count)
                 shipment_numbers.append(number)
             
             
@@ -494,7 +512,8 @@ def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_n
     # Write the header for the single user
     ws['B1'] = user_name
 
-    
+    #define a varianle to count shipments that have been COD without any pending status
+    cod_without_pending=0
     # Write the data for the single user
     for row_num, value in enumerate(employee_data, start=2):
         ws.cell(row=row_num, column=2).value = value
@@ -503,6 +522,11 @@ def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_n
         
     for row_num  ,value in enumerate(shipment_numbers,start=2):
         ws.cell(row=row_num,column=3).value=value
+        if value == 0 :
+            ws.cell(row=row_num,column=4).value="تم التسليم بدون عالق - لا تحسب في التقرير"
+            ws.cell(row=row_num,column=4).fill=green_fill
+            cod_without_pending=cod_without_pending+1
+
         
     if len(employee_data) == 0 :
         employee_data=[1]
