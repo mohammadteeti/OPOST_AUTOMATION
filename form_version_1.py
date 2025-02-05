@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import  filedialog , messagebox    
 import sys
@@ -13,6 +14,15 @@ import time
 from datetime import datetime,timedelta
 
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+
+from selenium.webdriver.edge.service import Service as EdgeService
+from webdriver_manager.core.manager import DriverManager
+
+
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -21,7 +31,7 @@ import re
 import psutil
 import random 
 import winsound
-
+import shutil
 
 red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 green_fill =PatternFill(start_color="00FF00",end_color="00FF00",fill_type="solid")
@@ -42,6 +52,7 @@ name=""
 employees=[]
 name_paths= {}
 
+browser_version=""
 
 
 
@@ -65,6 +76,26 @@ class RedirectOutput :
 
 
 ######################################################### START BROWSER SESSIONS CODE ########################################################
+
+def get_browser_version():
+
+    result=subprocess.run(["version.bat"],shell=True)
+    chrome_version=""
+    edge_version=""
+        # Define the WMIC command
+
+    time.sleep(4)
+
+    with open("chrome_version.data" , "r") as f:
+        chrome_version=f.read().strip()
+        f.close()
+    
+    with open("edge_version.data" , "r") as f:
+        edge_version=f.read().strip()
+        f.close()
+
+    return [chrome_version,edge_version]
+
 
 def start_chrome_session(debugging_string):
     chrome_path = "C:\\Program Files\\Google\\Chrome\\Application"
@@ -204,6 +235,30 @@ def stop_main_processing_thread():
 #####################################################################################################################################
 ################################################### The major code processing #######################################################
 
+'''
+# Function to detect installed Chrome version
+def get_chrome_version():
+    try:
+        # Windows
+        chrome_path = shutil.which("chrome") or shutil.which("chrome.exe")
+        if chrome_path:
+            version = subprocess.check_output([chrome_path, "--version"]).decode("utf-8").strip()
+            return version.split()[-1]  # Extracts version number
+        
+        # macOS
+        
+        return version.split()[-1]
+
+    except Exception as e:
+        print("Could not detect Chrome version:", e)
+        return None
+
+# Get the installed Chrome version
+chrome_version = get_chrome_version()
+print("Detected Chrome Version:", chrome_version)
+
+'''
+
 def get_employee_data_from_excel(input_path):
     
     #while not ((name:=input("Enter Name of Employee , Leave Empty to exit ")) == ""):
@@ -227,8 +282,13 @@ def get_employee_data_from_excel(input_path):
             options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
  
 
+            # Initialize WebDriver with the correct ChromeDriver version
+            driver = webdriver.Chrome(
+            service=ChromeService(ChromeDriverManager(get_browser_version()[0]).install()),
+            options=options
+            )
 
-            driver=webdriver.Chrome(options=options)
+            #driver=webdriver.Chrome(options=options)
             print("webdriver instatiated correctly")
             light_label.config(background="#00FF00")
 
@@ -242,9 +302,14 @@ def get_employee_data_from_excel(input_path):
         options.debugger_address = "127.0.0.1:"+str(port).strip()
         options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
         
+        # Initialize the WebDriver with the correct EdgeDriver version
+        driver = webdriver.Edge(
+        service=EdgeService(EdgeChromiumDriverManager(get_browser_version()[1]).install()),
+        options=options
+        )
 
 
-        driver=webdriver.Edge(options=options)
+        #driver=webdriver.Edge(options=options)
         print("webdriver instatiated correctly")
         light_label.config(background="#00FF00")
 
