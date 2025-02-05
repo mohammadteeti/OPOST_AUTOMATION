@@ -79,25 +79,26 @@ class RedirectOutput :
 
 def get_browser_version():
 
-    result=subprocess.run(["version.bat"],shell=True)
+    cmd="version.bat"
+    result=subprocess.run(cmd,shell=True,capture_output=True)
     chrome_version=""
     edge_version=""
         # Define the WMIC command
 
     time.sleep(4)
 
-    with open("chrome_version.data" , "r") as f:
+    with open("chrome_version.dat" , "r") as f:
         chrome_version=f.read().strip()
         f.close()
     
-    with open("edge_version.data" , "r") as f:
+    with open("edge_version.dat" , "r") as f:
         edge_version=f.read().strip()
         f.close()
 
     return [chrome_version,edge_version]
 
 
-def start_chrome_session(debugging_string):
+def start_chrome_session(browser_version,debugging_string):
     chrome_path = "C:\\Program Files\\Google\\Chrome\\Application"
     os.environ["PATH"] = os.pathsep + chrome_path
     time.sleep(0.5)
@@ -116,12 +117,26 @@ def start_chrome_session(debugging_string):
         msg= messagebox.askyesno("Login!","Is your login to OPOST account ready ? ")
         while( not msg):
             msg= messagebox.askyesno("Login!","Is your login to OPOST account ready ? ")
-        employee_urls= get_employee_data_from_excel(input_path)
+
+        options=webdriver.ChromeOptions()
+        options.debugger_address = "127.0.0.1:"+str(port).strip()
+        options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
+
+        # Initialize WebDriver with the correct ChromeDriver version
+        driver = webdriver.Chrome(
+        service=ChromeService(ChromeDriverManager(browser_version).install()),
+        options=options
+        )
+
+        #driver=webdriver.Chrome(options=options)
+        print("webdriver instatiated correctly")
+        light_label.config(background="#00FF00")
+        employee_urls= get_employee_data_from_excel(input_path,driver)
     except Exception as e:
         print(f"Error starting Chrome session: {e}\n")
         light_label.config(background="#FF0000")
 
-def start_edge_session(debugging_string):
+def start_edge_session(browser_version,debugging_string):
     
     edge_path="c:\\program files (x86)\\Microsoft\\Edge\\Application"
 
@@ -141,7 +156,20 @@ def start_edge_session(debugging_string):
         msg= messagebox.askyesno("Login!","Is your login to OPOST account ready ? ")
         while( not msg):
             msg= messagebox.askyesno("Login!","Is your login to OPOST account ready ? ")
-        employee_urls=get_employee_data_from_excel(input_path)
+
+        options=webdriver.EdgeOptions()
+        options.debugger_address = "127.0.0.1:"+str(port).strip()
+        options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
+
+        # Initialize the WebDriver with the correct EdgeDriver version
+        driver = webdriver.Edge(
+        service=EdgeService(EdgeChromiumDriverManager(browser_version).install()),
+        options=options
+    )
+        #driver=webdriver.Edge(options=options)
+        print("webdriver instatiated correctly")
+        light_label.config(background="#00FF00") 
+        employee_urls=get_employee_data_from_excel(input_path,driver)
     except Exception as e:
         print(f"Error starting Chrome session: {e}\n")
         light_label.config(background="#FF0000")
@@ -193,19 +221,28 @@ def run_script ():
                 print (f"{debugging_mode_string[0]}\n{debugging_mode_string[1]}\n{debugging_mode_string[2]}\n {port}")
                 cfg.close()
 
+            '''
             print("Reading employee names file ...\n")
             with open("employee_names.txt","r",encoding="utf-8") as f:
                 global employee_names
                 employee_names= f.readlines()
                 f.close()
+            '''
 
         
-
+            browser_version=get_browser_version()
             if  browserChoice.lower()=="chrome":
-                    start_chrome_session(debugging_string=debugging_mode_string[1])
+                try:
+                    start_chrome_session(browser_version=browser_version[0],debugging_string=debugging_mode_string[1])
+                except Exception as e:
+                    print(f"ُmain_processing_code Function calling start_chrome_session function : \n  {e}")
+                    light_label.config(background="#FF0000")
             elif browserChoice.lower()=="edge":
-                    start_edge_session(debugging_string=debugging_mode_string[2])
-
+                try:               
+                    start_edge_session(browser_version=browser_version[1],debugging_string=debugging_mode_string[2])
+                except Exception as e :
+                    print(f"ُmain_processing_code Function calling start_edge_session function \n  {e}")
+                    light_label.config(background="#FF0000")
 
     
         except Exception as e: 
@@ -259,7 +296,7 @@ print("Detected Chrome Version:", chrome_version)
 
 '''
 
-def get_employee_data_from_excel(input_path):
+def get_employee_data_from_excel(input_path,driver):
     
     #while not ((name:=input("Enter Name of Employee , Leave Empty to exit ")) == ""):
         #employees.append(name)
@@ -269,49 +306,9 @@ def get_employee_data_from_excel(input_path):
             #if not pattern.match(dates[name]): 
                 #dates[name]=input(f"Enter The Date of the File for {name} in the form mm-dd Ex. 05-27")
             #else:
-                #break 
-    global  driver
-    global browserChoice
+
     browserChoice=browser_var.get()
     print (f" Choice : {browserChoice.lower()}")
-    
-    if browserChoice.lower()=="chrome":
-        try:
-            options=webdriver.ChromeOptions()
-            options.debugger_address = "127.0.0.1:"+str(port).strip()
-            options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
- 
-
-            # Initialize WebDriver with the correct ChromeDriver version
-            driver = webdriver.Chrome(
-            service=ChromeService(ChromeDriverManager(get_browser_version()[0]).install()),
-            options=options
-            )
-
-            #driver=webdriver.Chrome(options=options)
-            print("webdriver instatiated correctly")
-            light_label.config(background="#00FF00")
-
-            
-        except Exception as e:
-            print(f"ُError in get_employee_data_from_excel Function : \n  {e}")
-            light_label.config(background="#FF0000")
-
-    elif browserChoice.lower()=="edge":
-        options=webdriver.EdgeOptions()
-        options.debugger_address = "127.0.0.1:"+str(port).strip()
-        options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
-        
-        # Initialize the WebDriver with the correct EdgeDriver version
-        driver = webdriver.Edge(
-        service=EdgeService(EdgeChromiumDriverManager(get_browser_version()[1]).install()),
-        options=options
-        )
-
-
-        #driver=webdriver.Edge(options=options)
-        print("webdriver instatiated correctly")
-        light_label.config(background="#00FF00")
 
 #try to login first to avoid selenium crash   exception in reading tracking number 
     try :
@@ -435,7 +432,7 @@ def get_employee_data_from_excel(input_path):
                 # there is a bug here where the readign start from above
 
                 
-
+                print([r.text+"\n\n" for r in table_row])
 
                 for row in reversed(table_row):
 
