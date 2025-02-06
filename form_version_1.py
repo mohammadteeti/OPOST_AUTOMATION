@@ -39,7 +39,7 @@ green_fill =PatternFill(start_color="00FF00",end_color="00FF00",fill_type="solid
 employee_urls = []
 debugging_mode_string =""
 
-employee_names=[]
+
 time_difference_per_user = [] 
 shipment_numbers= []
 pattern = re.compile(r'^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
@@ -49,34 +49,79 @@ stop_event =  threading.Event()
 
 name=""
 
-employees=[]
-name_paths= {}
-
 browser_version=""
 
 
 
 
 
+#End the Edge webview of each run 
+def kill_process_by_name(process_name):
+    for process in psutil.process_iter(['pid', 'name']):
+        if process.info['name'] and process_name.lower() in process.info['name'].lower():
+            try:
+                psutil.Process(process.info['pid']).terminate()
+                print(f"Killed process: {process.info['name']} (PID: {process.info['pid']})")
+            except psutil.NoSuchProcess as e1:
+                print(f"error in kill_debugging_edge {e1} ")
+                light_label.config(background="#FF0000")
+            except psutil.AccessDenied:
+                print(f"Access denied for process: {process.info['name']} (PID: {process.info['pid']})")
+                light_label.config(background="#FF0000")
+            except Exception as e:
+                print(f"Error terminating process {process.info['name']}: {e}")
+                light_label.config(background="#FF0000")
 
-####################################################### REDIRECT OUTPUT CLASS ###############################################################
-class RedirectOutput : 
 
-    def __init__(self,text_widget):
-        self.text_widget=text_widget
+def kill_debugging_chrome():
+    for process in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
+        try:
+            if "chrome.exe" in process.info['name'].lower():
+                cmdline = " ".join(process.info['cmdline']) if process.info['cmdline'] else ""
+                
+                # Check if Chrome was launched with remote debugging port 9333
+                if "--remote-debugging-port=9333" in cmdline:
+                    print(f"Killing debugging Chrome process: {process.info['name']} (PID: {process.info['pid']})")
+                    psutil.Process(process.info['pid']).terminate()
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
+            print(f"error in kill_debugging_edge {e} ")
+            light_label.config(background="#FF0000")
 
-    def write(self,text):
-        self.text_widget.insert(tk.END,text)
-        self.text_widget.see (tk.END)
-
-    def flush(self):
-        pass
-#############################################################################################################################################
 
 
 
+def kill_debugging_edge():
+    for process in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
+        try:
+            if "msedge.exe" in process.info['name'].lower():
+                cmdline = " ".join(process.info['cmdline']) if process.info['cmdline'] else ""
+                
+                # Check if Edge was launched with remote debugging port 9333
+                if "--remote-debugging-port=9333" in cmdline:
+                    print(f"Killing Edge debugging process: {process.info['name']} (PID: {process.info['pid']})")
+                    psutil.Process(process.info['pid']).terminate()
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess)as e:
+            light_label.config(background="#FF0000")
+            print(f"error in kill_debugging_edge {e} ")
 
-######################################################### START BROWSER SESSIONS CODE ########################################################
+
+
+kill_debugging_chrome()
+kill_debugging_edge()
+kill_process_by_name("msedgewebview2.exe")
+
+
+#read the preveious versions of the browser , in order to skip version manager if the same version is used 
+with open("chrome_version.dat","r") as f :
+        global prev_chrome_version
+        prev_chrome_version=f.read().strip()
+        f.close
+
+with open("edge_version.dat","r") as f :
+        global prev_edge_version
+        prev_edge_version=f.read().strip()
+        f.close
+
 
 def get_browser_version():
 
@@ -98,6 +143,26 @@ def get_browser_version():
 
     return [chrome_version,edge_version]
 
+####################################################### REDIRECT OUTPUT CLASS ###############################################################
+class RedirectOutput : 
+
+    def __init__(self,text_widget):
+        self.text_widget=text_widget
+
+    def write(self,text):
+        self.text_widget.insert(tk.END,text)
+        self.text_widget.see (tk.END)
+
+    def flush(self):
+        pass
+#############################################################################################################################################
+
+
+
+
+######################################################### START BROWSER SESSIONS CODE ########################################################
+
+
 
 def start_chrome_session(browser_version,debugging_string):
     chrome_path = "C:\\Program Files\\Google\\Chrome\\Application"
@@ -106,7 +171,7 @@ def start_chrome_session(browser_version,debugging_string):
     time.sleep(0.5)
     
     # Ensure the debugging command is properly defined
-    cmd = debugging_string  # Example: "chrome.exe --remote-debugging-port=9222 --user-data-dir='C:\\selenium\\'"
+    cmd = debugging_string  # Example: "chrome.exe --remote-debugging-port=9333 --user-data-dir='C:\\selenium\\'"
 
     if not cmd:
         print("Debugging mode command is empty. Check the configuration.\n")
@@ -152,7 +217,7 @@ def start_edge_session(browser_version,debugging_string):
     os.environ["PATH"]+=os.pathsep + edge_path
     time.sleep(0.5)
     # Ensure the debugging command is properly defined
-    cmd = debugging_string  # Example: "chrome.exe --remote-debugging-port=9222 --user-data-dir='C:\\selenium\\'"
+    cmd = debugging_string  # Example: "chrome.exe --remote-debugging-port=9333 --user-data-dir='C:\\selenium\\'"
     
     if not cmd:
         print("Debugging mode command is empty. Check the configuration.\n")
@@ -232,18 +297,9 @@ def run_script ():
                 global port
                 debugging_mode_string= cfg.readline().split(",") #the first line in Config file contains the whole debugging string from which chrome and edge debugging mode are extracted
                 port=cfg.readline().split(",")[1]
-                print (f"{debugging_mode_string[0]}\n{debugging_mode_string[1]}\n{debugging_mode_string[2]}\n {port}")
+                print (f"{debugging_mode_string[0]}\n\n{debugging_mode_string[1]}\n\n{debugging_mode_string[2]}\n\n{port}")
                 cfg.close()
 
-            '''
-            print("Reading employee names file ...\n")
-            with open("employee_names.txt","r",encoding="utf-8") as f:
-                global employee_names
-                employee_names= f.readlines()
-                f.close()
-            '''
-
-        
             browser_version=get_browser_version()
             if  browserChoice.lower()=="chrome":
                 try:
@@ -258,7 +314,6 @@ def run_script ():
                     print(f"ُmain_processing_code Function calling start_edge_session function \n  {e}")
                     light_label.config(background="#FF0000")
 
-    
         except Exception as e: 
             messagebox.showerror("Error" , e)
             light_label.config(background="#FF0000")
@@ -286,43 +341,11 @@ def stop_main_processing_thread():
 #####################################################################################################################################
 ################################################### The major code processing #######################################################
 
-'''
-# Function to detect installed Chrome version
-def get_chrome_version():
-    try:
-        # Windows
-        chrome_path = shutil.which("chrome") or shutil.which("chrome.exe")
-        if chrome_path:
-            version = subprocess.check_output([chrome_path, "--version"]).decode("utf-8").strip()
-            return version.split()[-1]  # Extracts version number
-        
-        # macOS
-        
-        return version.split()[-1]
-
-    except Exception as e:
-        print("Could not detect Chrome version:", e)
-        return None
-
-# Get the installed Chrome version
-chrome_version = get_chrome_version()
-print("Detected Chrome Version:", chrome_version)
-
-'''
-
 def get_employee_data_from_excel(input_path,driver):
     
-    #while not ((name:=input("Enter Name of Employee , Leave Empty to exit ")) == ""):
-        #employees.append(name)
-        #name_paths[name]=input(f"Enter Excel File Path for {name}")
-        #while True:
-            #dates[name]=input(f"Enter The Date of the File for {name} in the form mm-dd Ex. 05-27")
-            #if not pattern.match(dates[name]): 
-                #dates[name]=input(f"Enter The Date of the File for {name} in the form mm-dd Ex. 05-27")
-            #else:
 
     browserChoice=browser_var.get()
-    print (f" Choice : {browserChoice.lower()}")
+    print (f"\nChoice : {browserChoice.lower()}")
 
 #try to login first to avoid selenium crash   exception in reading tracking number 
     try :
@@ -347,7 +370,7 @@ def get_employee_data_from_excel(input_path,driver):
     except NoSuchElementException :
             #if email element is not found , then most probably the user is already logged in 
             print(f"\nMay be you are logged in already !") 
-            light_label.config(background="#FF0000")
+            light_label.config(background="#FFFF00")
             
 
 
@@ -368,7 +391,6 @@ def get_employee_data_from_excel(input_path,driver):
         print (f'name : {name} , date : {file_date} , path : {path} , is_random : {is_random}  {type(is_random)}')
         
         time_difference_per_user = [] 
-        cod_count_per_user=[]
         cod_count=0
         shipment_numbers=[]
         # Open the provided Excel file and read the B column from row 2 onward in the first sheet
@@ -391,7 +413,7 @@ def get_employee_data_from_excel(input_path,driver):
                 break
             print(f"{tracking_numbers.index(number)}: Working On {name} with Number : {number} in the Date : {file_date}\n")
             try:
-                driver.execute_script(f"window.open('https://opost.ps/resources/shipments?tracking_number=BLCB-VJU-004773778', '_self');")
+                driver.execute_script(f"window.open('https://opost.ps/resources/shipments?tracking_number={number}', '_self');")
             except Exception as e:
                 print(f" Error in get_employee_data_from_excel Function : \n  {e}")
                 light_label.config(background="#FF0000")
@@ -426,7 +448,7 @@ def get_employee_data_from_excel(input_path,driver):
             except Exception as e :
                 print(f"{e}")
                 continue
-
+            light_label.config(background="#00FF00")
             # Wait for the new content to load
             try:
                 # Define the locator for the new content
@@ -486,7 +508,6 @@ def get_employee_data_from_excel(input_path,driver):
                         if not is_first_time_employee_pen_detected :
                             if is_first_time_driver_pen_detected:
                                 if name in pending_data[1] :# check_if_name_occures_in_pending_line(pending_data[1]): #'291لارا' in  pending_data[1]  or '296هبة' in  pending_data[1] or '290رند' in  pending_data[1] or '294حمزة' in  pending_data[1] or 'احمد295' in  pending_data[1] or 'متابعة عوالق' in  pending_data[1] :
-                                    print("first time pending detected!")
                                     first_pending_of_employee=modify_time_if_before_T(pending_data[0])
                                     is_first_time_employee_pen_detected=True
                                 #break
@@ -497,19 +518,7 @@ def get_employee_data_from_excel(input_path,driver):
                         
                         
                     pending_data=[]
-                
-                #new loop to re check for the codpicked up  , but this time without reverse so the pointer will read from above 
-                # as the COD Pickup if ooccured it would be on top
-                '''for row in table_row:
-                    if "COD Pickup" in row.text and file_date in row.text:
-                        td_elements = row.find_elements(By.CSS_SELECTOR, "td") 
-                        cod_date= [td.text for td in td_elements] # as the page contains more than fixed COD Pickup lable beside the shipments status , we need to point out only the shipment status COD
-                        if file_date in cod_date[0]:
-                            #winsound.Beep(500,500)
-                            cod_count=cod_count+1
-                            break'''
-
-                    
+                       
 
                 if first_pending_of_employee and first_pending_of_driver:
                     print(f"time of employee {first_pending_of_employee} \ntime of driver {first_pending_of_driver}\n") #   show Pending resluts for both employee and driver
@@ -535,9 +544,7 @@ def get_employee_data_from_excel(input_path,driver):
                 # Print the difference in minutes
                 print(f"The difference in minutes is: {difference_in_minutes:.2f}\n")
                 time_difference_per_user.append(round(difference_in_minutes,2))
-                
-                
-                print(cod_count)
+            
                 shipment_numbers.append(number)
                 
             
@@ -567,7 +574,7 @@ def get_random_tracking_numbers(tracking_numbers_list):
 
 def modify_time_if_before_T(datetime_str):
     """
-    Modify the time part of the datetime string to 10:00:00 if the hour is before 10:00:00.
+    Modify the time part of the datetime string to 10:00:00 if the hour is before T:00:00 am.
     
     Parameters:
     datetime_str (str): The input datetime string in the format 'YYYY-MM-DD HH:MM:SS'.
@@ -588,15 +595,7 @@ def modify_time_if_before_T(datetime_str):
     
     return modified_datetime_str
 
-# why do we have to check for all employees while one employee name is known ????
-def check_if_name_occures_in_pending_line(pending_str :str):
-    print (f"\npending str:{pending_str}")
-    for name in employee_names:
-        print(f"searching  for \n{name} in {pending_str}")
-        if name in pending_str: 
-            print(f"Employee Name Found : {name}")
-            return True
-    return False
+
     
 def create_excel(date, employee_data,cod_count,shipment_numbers, user_name):
     # Create a new workbook and select the active worksheet
@@ -655,80 +654,17 @@ def create_excel(date, employee_data,cod_count,shipment_numbers, user_name):
     winsound.Beep(900,200)
 
 
-#End the Edge webview of each run 
-def kill_process_by_name(process_name):
-    for process in psutil.process_iter(['pid', 'name']):
-        if process.info['name'] and process_name.lower() in process.info['name'].lower():
-            try:
-                psutil.Process(process.info['pid']).terminate()
-                print(f"Killed process: {process.info['name']} (PID: {process.info['pid']})")
-            except psutil.NoSuchProcess as e1:
-                print(f"error in kill_debugging_edge {e1} ")
-                light_label.config(background="#FF0000")
-            except psutil.AccessDenied:
-                print(f"Access denied for process: {process.info['name']} (PID: {process.info['pid']})")
-                light_label.config(background="#FF0000")
-            except Exception as e:
-                print(f"Error terminating process {process.info['name']}: {e}")
-                light_label.config(background="#FF0000")
-
-
-def kill_debugging_chrome():
-    for process in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
-        try:
-            if "chrome.exe" in process.info['name'].lower():
-                cmdline = " ".join(process.info['cmdline']) if process.info['cmdline'] else ""
-                
-                # Check if Chrome was launched with remote debugging port 9222
-                if "--remote-debugging-port=9222" in cmdline:
-                    print(f"Killing debugging Chrome process: {process.info['name']} (PID: {process.info['pid']})")
-                    psutil.Process(process.info['pid']).terminate()
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
-            print(f"error in kill_debugging_edge {e} ")
-            light_label.config(background="#FF0000")
 
 
 def update_shift_time(value):
     global shift_time_T
     shift_time_T=int(value)
 
-def kill_debugging_edge():
-    for process in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
-        try:
-            if "msedge.exe" in process.info['name'].lower():
-                cmdline = " ".join(process.info['cmdline']) if process.info['cmdline'] else ""
-                
-                # Check if Edge was launched with remote debugging port 9222
-                if "--remote-debugging-port=9222" in cmdline:
-                    print(f"Killing Edge debugging process: {process.info['name']} (PID: {process.info['pid']})")
-                    psutil.Process(process.info['pid']).terminate()
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess)as e:
-            light_label.config(background="#FF0000")
-            print(f"error in kill_debugging_edge {e} ")
-
-
-
 #####################################################################################################################################
 #####################################################################################################################################
 
 
 ##################################### Create Main Screen Window with widgets ########################################################
-
-kill_debugging_chrome()
-kill_debugging_edge()
-kill_process_by_name("msedgewebview2.exe")
-
-
-#read the preveious versions of the browser , in order to skip version manager if the same version is used 
-with open("chrome_version.dat","r") as f :
-        global prev_chrome_version
-        prev_chrome_version=f.read().strip()
-        f.close
-
-with open("edge_version.dat","r") as f :
-        global prev_edge_version
-        prev_edge_version=f.read().strip()
-        f.close
 
 
 
