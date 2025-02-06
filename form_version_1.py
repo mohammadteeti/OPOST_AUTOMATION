@@ -54,16 +54,7 @@ name_paths= {}
 
 browser_version=""
 
-prev_chrome_version=""
-prev_edge_version=""
 
-#read the preveious versions of the browser , in order to skip version manager if the same version is used 
-with open("chrome_version.dat","r") as f :
-        prev_chrome_version=f.read().strip()
-        f.close
-with open("edge_version.dat","r") as f :
-        prev_edge_version=f.read().strip()
-        f.close
 
 
 
@@ -111,6 +102,7 @@ def get_browser_version():
 def start_chrome_session(browser_version,debugging_string):
     chrome_path = "C:\\Program Files\\Google\\Chrome\\Application"
     os.environ["PATH"] = os.pathsep + chrome_path
+    
     time.sleep(0.5)
     
     # Ensure the debugging command is properly defined
@@ -131,11 +123,14 @@ def start_chrome_session(browser_version,debugging_string):
         options=webdriver.ChromeOptions()
         options.debugger_address = "127.0.0.1:"+str(port).strip()
         options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
-
+        
         if prev_chrome_version == browser_version :
+            print("Using Same Driver Version")
+            
             driver=webdriver.Chrome(options=options)
         else :
             # Initialize WebDriver with the correct ChromeDriver version
+            print("Installing New Driver Version")
             driver = webdriver.Chrome(
             service=ChromeService(ChromeDriverManager(browser_version).install()),
             options=options
@@ -148,6 +143,7 @@ def start_chrome_session(browser_version,debugging_string):
     except Exception as e:
         print(f"Error starting Chrome session: {e}\n")
         light_label.config(background="#FF0000")
+
 
 def start_edge_session(browser_version,debugging_string):
     
@@ -175,9 +171,11 @@ def start_edge_session(browser_version,debugging_string):
         options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
 
         if prev_edge_version == browser_version :
+            print("Using Same Driver Version")
             driver=webdriver.Edge(options=options)
         else :
             # Initialize the WebDriver with the correct EdgeDriver version
+            print("Installing New Driver Version")
             driver = webdriver.Edge(
             service=EdgeService(EdgeChromiumDriverManager(browser_version).install()),
             options=options
@@ -393,7 +391,7 @@ def get_employee_data_from_excel(input_path,driver):
                 break
             print(f"{tracking_numbers.index(number)}: Working On {name} with Number : {number} in the Date : {file_date}\n")
             try:
-                driver.execute_script(f"window.open('https://opost.ps/resources/shipments?tracking_number={number}', '_self');")
+                driver.execute_script(f"window.open('https://opost.ps/resources/shipments?tracking_number=BLCB-VJU-004773778', '_self');")
             except Exception as e:
                 print(f" Error in get_employee_data_from_excel Function : \n  {e}")
                 light_label.config(background="#FF0000")
@@ -411,10 +409,22 @@ def get_employee_data_from_excel(input_path,driver):
                     button = buttons[28]
                     button.click()
                 else:
-                    print("Button not found\n")
-                    winsound.Beep(600,1000) 
-                    continue
+                    print("Button not found\n Trying Again One Time ")
+                    time.sleep(1)
+                    try :
+                        buttons=driver.find_elements(By.TAG_NAME, "button")
+                        if len(buttons)>28:
+                            button=buttons[28]
+                            button.click()
+                        else:
+                            print("Button not found\n Please Check Internet Connection and try again ")
+                            winsound.Beep(600,1000) 
+                            continue
+                    except Exception as e:
+                        print(f"{e}")
+                        continue
             except Exception as e :
+                print(f"{e}")
                 continue
 
             # Wait for the new content to load
@@ -447,8 +457,15 @@ def get_employee_data_from_excel(input_path,driver):
                 # The logic below consists the results to the Pending and COD status types only, other status types are eventually ignored                                           
                 # there is a bug here where the readign start from above
 
-                
-                print([r.text+"\n\n" for r in table_row])
+                cod_pickup_in_page=0
+                for row in table_row:
+                    if "COD Pickup" in row.text:
+                        cod_pickup_in_page = cod_pickup_in_page+1
+                    if cod_pickup_in_page >1 :
+                        cod_count=cod_count+1
+                        break
+
+                        
 
                 for row in reversed(table_row):
 
@@ -462,13 +479,14 @@ def get_employee_data_from_excel(input_path,driver):
                         print(f"{pending_data[1]} {pending_data[3]}\n")
                         
                         if not is_first_time_driver_pen_detected:
-                            if pending_data[1] == pending_data[3]:
+                            if pending_data[1].strip() == pending_data[3].strip():
                                 first_pending_of_driver=pending_data[0]
                                 is_first_time_driver_pen_detected=True
                             
                         if not is_first_time_employee_pen_detected :
                             if is_first_time_driver_pen_detected:
                                 if name in pending_data[1] :# check_if_name_occures_in_pending_line(pending_data[1]): #'291لارا' in  pending_data[1]  or '296هبة' in  pending_data[1] or '290رند' in  pending_data[1] or '294حمزة' in  pending_data[1] or 'احمد295' in  pending_data[1] or 'متابعة عوالق' in  pending_data[1] :
+                                    print("first time pending detected!")
                                     first_pending_of_employee=modify_time_if_before_T(pending_data[0])
                                     is_first_time_employee_pen_detected=True
                                 #break
@@ -482,14 +500,14 @@ def get_employee_data_from_excel(input_path,driver):
                 
                 #new loop to re check for the codpicked up  , but this time without reverse so the pointer will read from above 
                 # as the COD Pickup if ooccured it would be on top
-                for row in table_row:
+                '''for row in table_row:
                     if "COD Pickup" in row.text and file_date in row.text:
                         td_elements = row.find_elements(By.CSS_SELECTOR, "td") 
                         cod_date= [td.text for td in td_elements] # as the page contains more than fixed COD Pickup lable beside the shipments status , we need to point out only the shipment status COD
                         if file_date in cod_date[0]:
                             #winsound.Beep(500,500)
                             cod_count=cod_count+1
-                            break
+                            break'''
 
                     
 
@@ -517,20 +535,21 @@ def get_employee_data_from_excel(input_path,driver):
                 # Print the difference in minutes
                 print(f"The difference in minutes is: {difference_in_minutes:.2f}\n")
                 time_difference_per_user.append(round(difference_in_minutes,2))
-                if cod_count > 0 :
-                    cod_count_per_user.append(cod_count)
-                    print(cod_count)
+                
+                
+                print(cod_count)
                 shipment_numbers.append(number)
-            
+                
             
             except Exception as e:
                     print("New content did not load within the wait time:", e,"\n")
                     winsound.Beep(700,1000)
                     continue #  The flow should continue and ignore any exceptions as the exceptions are mainly generated pair Tracking Number 
-                
+            
+             
         
         #call function to create the results as excel file 
-        create_excel(file_date, time_difference_per_user,cod_count_per_user,shipment_numbers,name)
+        create_excel(file_date, time_difference_per_user,cod_count,shipment_numbers,name)
 
 
 ############ Auxilary Function #################
@@ -579,7 +598,7 @@ def check_if_name_occures_in_pending_line(pending_str :str):
             return True
     return False
     
-def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_name):
+def create_excel(date, employee_data,cod_count,shipment_numbers, user_name):
     # Create a new workbook and select the active worksheet
     wb = Workbook()
     ws = wb.active
@@ -621,7 +640,7 @@ def create_excel(date, employee_data,cod_count_per_user,shipment_numbers, user_n
     ws.cell(row=len(employee_data)+3,column=2 ).value= round(sum(employee_data)/(len(employee_data)-cod_without_pending),2)
 
     ws.cell(row=len(employee_data)+5,column=1 ).value="COD COUNT = " 
-    ws.cell(row=len(employee_data)+5,column=2 ).value=len(cod_count_per_user)
+    ws.cell(row=len(employee_data)+5,column=2 ).value=cod_count
 
 
     
@@ -698,6 +717,20 @@ def kill_debugging_edge():
 kill_debugging_chrome()
 kill_debugging_edge()
 kill_process_by_name("msedgewebview2.exe")
+
+
+#read the preveious versions of the browser , in order to skip version manager if the same version is used 
+with open("chrome_version.dat","r") as f :
+        global prev_chrome_version
+        prev_chrome_version=f.read().strip()
+        f.close
+
+with open("edge_version.dat","r") as f :
+        global prev_edge_version
+        prev_edge_version=f.read().strip()
+        f.close
+
+
 
 # Create the main application window
 root = tk.Tk()
