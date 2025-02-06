@@ -54,6 +54,16 @@ name_paths= {}
 
 browser_version=""
 
+prev_chrome_version=""
+prev_edge_version=""
+
+#read the preveious versions of the browser , in order to skip version manager if the same version is used 
+with open("chrome_version.dat","r") as f :
+        prev_chrome_version=f.read().strip()
+        f.close
+with open("edge_version.dat","r") as f :
+        prev_edge_version=f.read().strip()
+        f.close
 
 
 
@@ -122,13 +132,16 @@ def start_chrome_session(browser_version,debugging_string):
         options.debugger_address = "127.0.0.1:"+str(port).strip()
         options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
 
-        # Initialize WebDriver with the correct ChromeDriver version
-        driver = webdriver.Chrome(
-        service=ChromeService(ChromeDriverManager(browser_version).install()),
-        options=options
-        )
+        if prev_chrome_version == browser_version :
+            driver=webdriver.Chrome(options=options)
+        else :
+            # Initialize WebDriver with the correct ChromeDriver version
+            driver = webdriver.Chrome(
+            service=ChromeService(ChromeDriverManager(browser_version).install()),
+            options=options
+            )
 
-        #driver=webdriver.Chrome(options=options)
+        
         print("webdriver instatiated correctly")
         light_label.config(background="#00FF00")
         employee_urls= get_employee_data_from_excel(input_path,driver)
@@ -156,17 +169,20 @@ def start_edge_session(browser_version,debugging_string):
         msg= messagebox.askyesno("Login!","Is your login to OPOST account ready ? ")
         while( not msg):
             msg= messagebox.askyesno("Login!","Is your login to OPOST account ready ? ")
-
+            
         options=webdriver.EdgeOptions()
         options.debugger_address = "127.0.0.1:"+str(port).strip()
         options.add_argument("--headless=new")  # Run Chrome in headless mode to avoide 	GetHandleVerifier [0x00007FF6FFA00AF5+13637] error during the normal usage of system by user 
 
-        # Initialize the WebDriver with the correct EdgeDriver version
-        driver = webdriver.Edge(
-        service=EdgeService(EdgeChromiumDriverManager(browser_version).install()),
-        options=options
-    )
-        #driver=webdriver.Edge(options=options)
+        if prev_edge_version == browser_version :
+            driver=webdriver.Edge(options=options)
+        else :
+            # Initialize the WebDriver with the correct EdgeDriver version
+            driver = webdriver.Edge(
+            service=EdgeService(EdgeChromiumDriverManager(browser_version).install()),
+            options=options
+            )
+        
         print("webdriver instatiated correctly")
         light_label.config(background="#00FF00") 
         employee_urls=get_employee_data_from_excel(input_path,driver)
