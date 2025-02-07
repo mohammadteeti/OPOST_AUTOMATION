@@ -259,9 +259,7 @@ def start_edge_session(browser_version,debugging_string):
 def browsFile(): 
     global input_path
     input_path = filedialog.askopenfilename(filetypes=[("Excel Files","*.xlsx"),("All Files","*.*")])
-    
 
-    print(f"input_path: {input_path}")
     if input_path:
         path_box.delete(0,tk.END)
         path_box.insert(0,input_path)
@@ -271,7 +269,7 @@ def run_script ():
     global browserChoice
     browserChoice= browser_var.get()
     input_path =path_box.get()
-    print(path_box.get())
+    
 
 
     if not browserChoice:
@@ -298,7 +296,6 @@ def run_script ():
                 global port
                 debugging_mode_string= cfg.readline().split(",") #the first line in Config file contains the whole debugging string from which chrome and edge debugging mode are extracted
                 port=cfg.readline().split(",")[1]
-                print (f"{debugging_mode_string[0]}\n\n{debugging_mode_string[1]}\n\n{debugging_mode_string[2]}\n\n{port}")
                 cfg.close()
 
             browser_version=get_browser_version()
@@ -318,7 +315,7 @@ def run_script ():
         except Exception as e: 
             messagebox.showerror("Error" , e)
             light_label.config(background="#FF0000")
-            print(f"{e}\n")
+            
     
     global thread
     thread = threading.Thread(target=main_processing_code,daemon=True)
@@ -389,7 +386,7 @@ def get_employee_data_from_excel(input_path,driver):
         path= row[1].value + '.xlsx'
         file_date =row[2].value
         is_random=row[3].value
-        print (f'name : {name} , date : {file_date} , path : {path} , is_random : {is_random}  {type(is_random)}')
+        print (f'name : {name} , date : {file_date} , path : {path} , is_random : {is_random}')
         
         time_difference_per_user = [] 
         cod_count=0
@@ -432,7 +429,7 @@ def get_employee_data_from_excel(input_path,driver):
                     button = buttons[28]
                     button.click()
                 else:
-                    print("Button not found\n Trying Again One Time ")
+                    print("Button not found\nTrying Again One Time... ")
                     time.sleep(1)
                     try :
                         buttons=driver.find_elements(By.TAG_NAME, "button")
@@ -440,7 +437,7 @@ def get_employee_data_from_excel(input_path,driver):
                             button=buttons[28]
                             button.click()
                         else:
-                            print("Button not found\n Please Check Internet Connection and try again ")
+                            print("Button not found\nPlease Check Internet Connection and try again ")
                             winsound.Beep(600,1000) 
                             continue
                     except Exception as e:
@@ -522,7 +519,7 @@ def get_employee_data_from_excel(input_path,driver):
                        
 
                 if first_pending_of_employee and first_pending_of_driver:
-                    print(f"time of employee {first_pending_of_employee} \ntime of driver {first_pending_of_driver}\n") #   show Pending resluts for both employee and driver
+                    #print(f"time of employee {first_pending_of_employee} \ntime of driver {first_pending_of_driver}\n") #   show Pending resluts for both employee and driver
                     time1 = datetime.strptime(first_pending_of_driver, "%Y-%m-%d %H:%M:%S").time()                      #   extract the time only from the full date-time format of driver Pending status 
                     time2 = datetime.strptime(first_pending_of_employee, "%Y-%m-%d %H:%M:%S").time()                    #   extract the time only from the full date-time format of employee Pending status 
                 else:
@@ -536,8 +533,8 @@ def get_employee_data_from_excel(input_path,driver):
                 time1_delta = timedelta(hours=time1.hour, minutes=time1.minute, seconds=time1.second)
                 time2_delta = timedelta(hours=time2.hour, minutes=time2.minute, seconds=time2.second)
 
-                print(f"Timedelta1 {time1_delta}\n")
-                print(f"Timedelta2 {time2_delta}\n")
+                #print(f"Timedelta1 {time1_delta}\n")
+                #print(f"Timedelta2 {time2_delta}\n")
                 # Calculate the absolute difference in minutes between the two time components
                 time_difference = abs(time2_delta - time1_delta)
                 difference_in_minutes = time_difference.total_seconds() / 60
