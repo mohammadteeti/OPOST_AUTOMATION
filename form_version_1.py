@@ -44,6 +44,7 @@ time_difference_per_user = []
 shipment_numbers= []
 pattern = re.compile(r'^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
 shift_time_T=0
+random_sample=0
 stop_event =  threading.Event()
 
 
@@ -165,8 +166,8 @@ class RedirectOutput :
 
 
 def start_chrome_session(browser_version,debugging_string):
-    chrome_path = "C:\\Program Files\\Google\\Chrome\\Application"
-    os.environ["PATH"] = os.pathsep + chrome_path
+    chrome_path =str("C:\\Program Files\\Google\\Chrome\\Application")
+    os.environ["PATH"] +=os.pathsep+ chrome_path
     
     time.sleep(0.5)
     
@@ -204,7 +205,7 @@ def start_chrome_session(browser_version,debugging_string):
         
         print("webdriver instatiated correctly")
         light_label.config(background="#00FF00")
-        employee_urls= get_employee_data_from_excel(input_path,driver)
+        get_employee_data_from_excel(input_path,driver)
     except Exception as e:
         print(f"Error starting Chrome session: {e}\n")
         light_label.config(background="#FF0000")
@@ -212,7 +213,7 @@ def start_chrome_session(browser_version,debugging_string):
 
 def start_edge_session(browser_version,debugging_string):
     
-    edge_path="c:\\program files (x86)\\Microsoft\\Edge\\Application"
+    edge_path=str("c:\\program files (x86)\\Microsoft\\Edge\\Application")
 
     os.environ["PATH"]+=os.pathsep + edge_path
     time.sleep(0.5)
@@ -248,7 +249,7 @@ def start_edge_session(browser_version,debugging_string):
         
         print("webdriver instatiated correctly")
         light_label.config(background="#00FF00") 
-        employee_urls=get_employee_data_from_excel(input_path,driver)
+        get_employee_data_from_excel(input_path,driver)
     except Exception as e:
         print(f"Error starting Chrome session: {e}\n")
         light_label.config(background="#FF0000")
@@ -403,7 +404,7 @@ def get_employee_data_from_excel(input_path,driver):
                 tracking_numbers.append(cell.value)
 
         if is_random==1:
-                print("Random of 20 Samples are Chosen\n")
+                print(f"Random of {random_sample} Samples are Chosen\n")
                 tracking_numbers= get_random_tracking_numbers(tracking_numbers) 
         else:
                 print("Full File is Chosen\n")
@@ -564,8 +565,8 @@ def get_employee_data_from_excel(input_path,driver):
 def get_random_tracking_numbers(tracking_numbers_list):
     
     # Ensure the original list has at least 20 elements
-    if len(tracking_numbers_list) >= 20:
-        random_numbers = random.sample(tracking_numbers_list, 20)
+    if len(tracking_numbers_list) >= random_sample:
+        random_numbers = random.sample(tracking_numbers_list, random_sample)
         return random_numbers
     else:
         print("The list does not contain enough elements. Returning the whole tracking numbers list \n")
@@ -598,67 +599,74 @@ def modify_time_if_before_T(datetime_str):
 
     
 def create_excel(date, employee_data,cod_count,shipment_numbers, user_name):
-    # Create a new workbook and select the active worksheet
-    wb = Workbook()
-    ws = wb.active
+    try:
+        # Create a new workbook and select the active worksheet
+        wb = Workbook()
+        ws = wb.active
 
-    # Set the date in cell A1
-    ws['A1'] = date
+        # Set the date in cell A1
+        ws['A1'] = date
 
-    # Write the header for the single user
-    ws['B1'] = user_name
+        # Write the header for the single user
+        ws['B1'] = user_name
 
-    #set columns widths 
-    ws.column_dimensions["A"].width=len("COD COUNT = ")
-    ws.column_dimensions["B"].width=len(str(user_name)+" ")
-    ws.column_dimensions["C"].width=len("XXXXXX-XXX-XXXXXXXXX  ")
-    ws.column_dimensions["D"].width=len(" تم التسليم بدون عالق - لا تحسب في التقرير")
-
-
-    #define a varianle to count shipments that have been COD without any pending status
-    cod_without_pending=0
-    # Write the data for the single user
-    for row_num, value in enumerate(employee_data, start=2):
-        ws.cell(row=row_num, column=2).value = value
-        if value>10 :
-            ws.cell(row=row_num, column=2).fill=red_fill
-
-        if value == 0 :
-            ws.cell(row=row_num,column=4).value="تم التسليم بدون عالق - لا تحسب في التقرير"
-            ws.cell(row=row_num,column=4).fill=green_fill
-            cod_without_pending=cod_without_pending+1
-    
-        
-    for row_num  ,value in enumerate(shipment_numbers,start=2):
-        ws.cell(row=row_num,column=3).value=value
-
-        
-    if len(employee_data) == 0 :
-        employee_data=[1]
-    ws.cell(row=len(employee_data)+3,column=1 ).value="Average = " 
-    ws.cell(row=len(employee_data)+3,column=2 ).value= round(sum(employee_data)/(len(employee_data)-cod_without_pending),2)
-
-    ws.cell(row=len(employee_data)+5,column=1 ).value="COD COUNT = " 
-    ws.cell(row=len(employee_data)+5,column=2 ).value=cod_count
+        #set columns widths 
+        ws.column_dimensions["A"].width=len("COD COUNT = ")
+        ws.column_dimensions["B"].width=len(str(user_name)+" ")
+        ws.column_dimensions["C"].width=len("XXXXXX-XXX-XXXXXXXXX  ")
+        ws.column_dimensions["D"].width=len(" تم التسليم بدون عالق - لا تحسب في التقرير")
 
 
-    
-    # Save the workbook
-    file_name = f"{date.replace('/', '-')}_for_{user_name}.xlsx"
-    wb.save(file_name)
-    print(f"Excel file '{file_name}' created successfully.\n")
-    winsound.Beep(900,200)
-    time.sleep(0.2)
-    winsound.Beep(900,200)
-    time.sleep(0.2)
-    winsound.Beep(900,200)
+        #define a varianle to count shipments that have been COD without any pending status
+        cod_without_pending=0
+        # Write the data for the single user
+        for row_num, value in enumerate(employee_data, start=2):
+            ws.cell(row=row_num, column=2).value = value
+            if value>10 :
+                ws.cell(row=row_num, column=2).fill=red_fill
 
+            if value == 0 :
+                ws.cell(row=row_num,column=4).value="تم التسليم بدون عالق - لا تحسب في التقرير"
+                ws.cell(row=row_num,column=4).fill=green_fill
+                cod_without_pending=cod_without_pending+1
+
+            
+        for row_num  ,value in enumerate(shipment_numbers,start=2):
+            ws.cell(row=row_num,column=3).value=value
+
+            
+        if len(employee_data) == 0 :
+            employee_data=[1]
+        ws.cell(row=len(employee_data)+3,column=1 ).value="Average = " 
+        ws.cell(row=len(employee_data)+3,column=2 ).value= round(sum(employee_data)/(len(employee_data)-cod_without_pending),2)
+
+        ws.cell(row=len(employee_data)+5,column=1 ).value="COD COUNT = " 
+        ws.cell(row=len(employee_data)+5,column=2 ).value=cod_count
+
+
+
+        # Save the workbook
+        file_name = f"{date.replace('/', '-')}_for_{user_name}.xlsx"
+        wb.save(file_name)
+        winsound.Beep(900,200)
+        time.sleep(0.2)
+        winsound.Beep(900,200)
+        time.sleep(0.2)
+        winsound.Beep(900,200)
+        print(f"Excel file '{file_name}' created successfully.\n")
+
+    except   Exception as e : 
+        print(f"Error in Creating Excel Function {e}\n")
 
 
 
 def update_shift_time(value):
     global shift_time_T
     shift_time_T=int(value)
+
+def update_sample_number(value):
+    global random_sample
+    random_sample=value
 
 #####################################################################################################################################
 #####################################################################################################################################
@@ -716,6 +724,16 @@ shift_time_var = tk.IntVar(value=9)
 shift_time_menu = tk.OptionMenu(shift_time_frame, shift_time_var, 9, 10,command=update_shift_time)
 shift_time_menu.pack(side=tk.LEFT, padx=10)
 
+#create a random sample selector 
+
+
+random_selector_label=tk.Label(shift_time_frame,text="Random Sample Of :")
+random_selector_label.pack(side=tk.LEFT,padx=10)
+
+default_random_sample=tk.IntVar(value=20)
+random_selector_menu = tk.OptionMenu(shift_time_frame,default_random_sample,5,10,15,20,25,30,command=update_sample_number)
+random_selector_menu.pack(side=tk.RIGHT,padx=10,fill=tk.X,expand=True)
+
 
 
 #create login frame and controls 
@@ -751,13 +769,13 @@ stop_button.pack(padx=10 ,pady=10)
 
 
 # Create a log screen
-log_frame = tk.Frame(root, padx=10, pady=10)
+log_frame = tk.Frame(root, padx=10, pady=10,width=100)
 log_frame.pack(fill=tk.BOTH, expand=True)
 
 log_label = tk.Label(log_frame, text="Log Screen", anchor="w")
 log_label.pack(fill=tk.X)
 
-log_text = tk.Text(log_frame, bg="black", fg="white", state=tk.NORMAL)
+log_text = tk.Text(log_frame, bg="black", fg="white", state=tk.NORMAL,width=100)
 log_text.pack(fill=tk.BOTH, expand=True)
 
 # Redirect print statements to the log screen
