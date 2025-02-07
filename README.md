@@ -73,7 +73,7 @@ This provides flexibility to users with different preferences and technical expe
 <<<<<<< HEAD
 ![GUI FORM](https://github.com/mohammadteeti/OPOST_AUTOMATION/blob/master/Media/Screen Shot.JPG)
 =======
-![GUI FORM](https://github.com/mohammadteeti/OPOST_AUTOMATION/blob/gui_form_COD/Media/Screen%20Shot.JPG)
+![GUI FORM](https://github.com/mohammadteeti/OPOST_AUTOMATION/blob/master/Media/Screen%20Shot.JPG)
 >>>>>>> origin/master
 
 
