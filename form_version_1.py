@@ -480,17 +480,19 @@ def get_employee_data_from_excel(input_path,driver):
                 cod_pickup_in_page=0
                 for row in table_row:
                     if "COD Pickup" in row.text:
+                        print("COD Pickup found")
                         cod_pickup_in_page = cod_pickup_in_page+1
                     if cod_pickup_in_page >1 :
                         cod_count=cod_count+1
                         break
 
                         
-
+                
                 for row in reversed(table_row):
 
-
+                    
                     if  "Pending" in row.text and file_date in row.text:
+                        print ("pending status found")
                         td_elements = row.find_elements(By.CSS_SELECTOR, "td")
 
 
@@ -631,12 +633,16 @@ def create_excel(date, employee_data,cod_count,shipment_numbers, user_name):
         for row_num  ,value in enumerate(shipment_numbers,start=2):
             ws.cell(row=row_num,column=3).value=value
 
-            
+        
         if len(employee_data) == 0 :
             employee_data=[1]
         ws.cell(row=len(employee_data)+3,column=1 ).value="Average = " 
-        ws.cell(row=len(employee_data)+3,column=2 ).value= round(sum(employee_data)/(len(employee_data)-cod_without_pending),2)
-
+        try:
+            ws.cell(row=len(employee_data)+3,column=2 ).value= round(sum(employee_data)/(len(employee_data)-cod_without_pending),2)
+        except ZeroDivisionError:
+            ws.cell(row=len(employee_data)+3,column=2 ).value=0
+            ws.cell(row=len(employee_data)+3,column=2 ).fill=red_fill
+            
         ws.cell(row=len(employee_data)+5,column=1 ).value="COD COUNT = " 
         ws.cell(row=len(employee_data)+5,column=2 ).value=cod_count
 
