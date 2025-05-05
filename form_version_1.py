@@ -6,6 +6,7 @@ import threading
 import os
 import time
 import subprocess
+import webbrowser
 import openpyxl
 from openpyxl.styles import PatternFill
 from openpyxl import Workbook
@@ -331,8 +332,34 @@ def stop_main_processing_thread():
     light_label.config(background="#FF0000")
     
 
+def show_about_window():
+    about_win = tk.Toplevel(root)
+    about_win.title("About")
+    about_win.geometry("300x200")
+    
+    # Name label
+    name_label = tk.Label(about_win, text="Created By:\nEng. Mohammad Jbber Teeti", font=("Arial", 12, "bold"))
+    name_label.pack(pady=(10, 5))
 
+    # GitHub button
+    github_button = tk.Button(
+        about_win, 
+        text="Visit GitHub", 
+        command=lambda: webbrowser.open("https://github.com/mohammadteeti")
+    )
+    github_button.pack(pady=5)
 
+    # LinkedIn button
+    linkedin_button = tk.Button(
+        about_win, 
+        text="Visit LinkedIn", 
+        command=lambda: webbrowser.open("https://www.linkedin.com/in/mohammadteeti/")
+    )
+    linkedin_button.pack(pady=5)
+
+    # Close button
+    close_button = tk.Button(about_win, text="Close", command=about_win.destroy)
+    close_button.pack(pady=10)
 
 
 #####################################################################################################################################
@@ -681,14 +708,14 @@ def update_sample_number(value):
 
 # Create the main application window
 root = tk.Tk()
-root.title("Browser and File Selector")
+root.title("Pending Response Monitor")
 root.geometry("600x600")
 root.resizable(False, False)
-
+root.config(bg="#cceeff")
 # Create a frame for the file selection
 file_frame = tk.Frame(root, padx=10, pady=10)
 file_frame.pack(fill=tk.X)
-
+file_frame.config(bg="#cceeff")
 browse_button = tk.Button(file_frame, text="Browse", command=browsFile)
 browse_button.pack(side=tk.LEFT, padx=5)
 
@@ -698,6 +725,7 @@ path_box.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
 # Create a frame for browser selection
 browser_frame = tk.Frame(root, padx=10, pady=10)
 browser_frame.pack(fill=tk.X)
+browser_frame.config(bg="#cceeff")
 # create red- and green 
 light_label=tk.Label(file_frame,text="",width=3,height=3,background="#FF0000")
 light_label.pack(padx=20)
@@ -715,7 +743,7 @@ edge_radio.pack(side=tk.LEFT, padx=10)
 # Create a frame for shift time selection
 shift_time_frame = tk.Frame(root, padx=10, pady=10)
 shift_time_frame.pack(fill=tk.X)
-
+shift_time_frame.config(bg="#cceeff")
 # Label for shift time
 shift_time_label = tk.Label(shift_time_frame, text="Shift Time Start (T):")
 shift_time_label.pack(side=tk.LEFT, padx=10)
@@ -744,7 +772,7 @@ random_selector_menu.pack(side=tk.RIGHT,padx=10,fill=tk.X,expand=True)
 # Create login login_frame
 login_frame = tk.Frame(root, padx=20, pady=20)
 login_frame.pack(pady=20)
-
+login_frame.config(bg="#cceeff")
 # Username label and entry
 label_username = tk.Label(login_frame, text="Username:")
 label_username.grid(row=0, column=0, sticky="w")
@@ -763,13 +791,16 @@ entry_password.grid(row=1, column=1)
 #button_login.grid(row=2, column=0, columnspan=2, pady=10)
 
 # Create a button to run the script
-run_button = tk.Button(root, text="Run", command=run_script)
-run_button.pack(pady=10)
+run_button = tk.Button(root, text="Run", command=run_script ,font=("Arial", 12, "bold"))
+run_button.pack(pady=5,padx=5)
 
 #create a button to stop the script
-stop_button = tk.Button(root,text="Stop",command=stop_main_processing_thread)
+stop_button = tk.Button(root,text="Stop",command=stop_main_processing_thread ,font=("Arial", 12, "bold"))
 stop_button.pack(padx=10 ,pady=10)
 
+#create a button to show about window
+about_button = tk.Button(root,text="about",command=show_about_window,width=100,height=2,background="#ABFFBC",font=("Arial", 12, "bold"))
+about_button.pack(padx=5 ,pady=5)
 
 # Create a log screen
 log_frame = tk.Frame(root, padx=10, pady=10,width=100)
