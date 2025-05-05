@@ -712,6 +712,7 @@ root.title("Pending Response Monitor")
 root.geometry("600x600")
 root.resizable(False, False)
 root.config(bg="#cceeff")
+root.iconbitmap("ICO.ico")
 # Create a frame for the file selection
 file_frame = tk.Frame(root, padx=10, pady=10)
 file_frame.pack(fill=tk.X)
