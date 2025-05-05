@@ -770,7 +770,7 @@ random_selector_menu.pack(side=tk.RIGHT,padx=10,fill=tk.X,expand=True)
 #create login frame and controls 
 
 # Create login login_frame
-login_frame = tk.Frame(root, padx=20, pady=20)
+login_frame = tk.Frame(root, padx=10, pady=2)
 login_frame.pack(pady=20)
 login_frame.config(bg="#cceeff")
 # Username label and entry
@@ -805,7 +805,7 @@ about_button.pack(padx=5 ,pady=5)
 # Create a log screen
 log_frame = tk.Frame(root, padx=10, pady=10,width=100)
 log_frame.pack(fill=tk.BOTH, expand=True)
-
+log_frame.config(bg="#cceeff")
 log_label = tk.Label(log_frame, text="Log Screen", anchor="w")
 log_label.pack(fill=tk.X)
 
