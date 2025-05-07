@@ -418,6 +418,7 @@ def get_employee_data_from_excel(input_path,driver):
         time_difference_per_user = [] 
         cod_count=0
         shipment_numbers=[]
+        reply_times = []
         # Open the provided Excel file and read the B column from row 2 onward in the first sheet
         wb = openpyxl.load_workbook(path)
         ws = wb.active
@@ -526,6 +527,7 @@ def get_employee_data_from_excel(input_path,driver):
                         # Iterate through td elements and print their text
                         pending_data = [td.text for td in td_elements]
                         print(f"{pending_data[1]} {pending_data[3]}\n")
+                        #print (f"Pending Type  :  {pending_data[5]}")
                         
                         if not is_first_time_driver_pen_detected:
                             if pending_data[1].strip() == pending_data[3].strip():
@@ -573,7 +575,8 @@ def get_employee_data_from_excel(input_path,driver):
                 time_difference_per_user.append(round(difference_in_minutes,2))
             
                 shipment_numbers.append(number)
-                
+                reply_times.append((first_pending_of_employee,first_pending_of_driver)) #store the response times of both employee and driver for each number
+
             
             except Exception as e:
                     print("New content did not load within the wait time:", e,"\n")
@@ -583,7 +586,7 @@ def get_employee_data_from_excel(input_path,driver):
              
         
         #call function to create the results as excel file 
-        create_excel(file_date, time_difference_per_user,cod_count,shipment_numbers,name)
+        create_excel(file_date, time_difference_per_user,cod_count,shipment_numbers,reply_times,name)
 
 
 ############ Auxilary Function #################
@@ -624,7 +627,7 @@ def modify_time_if_before_T(datetime_str):
 
 
     
-def create_excel(date, employee_data,cod_count,shipment_numbers, user_name):
+def create_excel(date, employee_data,cod_count,shipment_numbers,reply_times, user_name):
     try:
         # Create a new workbook and select the active worksheet
         wb = Workbook()
@@ -636,6 +639,22 @@ def create_excel(date, employee_data,cod_count,shipment_numbers, user_name):
         # Write the header for the single user
         ws['B1'] = user_name
 
+        # Write the header for the Shipment Numbers
+        ws['C1'] = "رقم الشحنة"
+        
+        #write the header for the COD count
+        ws['D1'] = "في حال تم التسليم بدون عالق"
+        
+        #write the header for the reply times
+        ws['E1'] = "وقت الرد من الموظف"
+        ws['F1'] = "وقت الرد من السائق"
+        
+        ws["A1"].font = openpyxl.styles.Font(bold=True)
+        ws["B1"].font = openpyxl.styles.Font(bold=True)
+        ws["C1"].font = openpyxl.styles.Font(bold=True)
+        ws["D1"].font = openpyxl.styles.Font(bold=True)
+        ws["E1"].font = openpyxl.styles.Font(bold=True)
+        ws["F1"].font = openpyxl.styles.Font(bold=True)
         #set columns widths 
         ws.column_dimensions["A"].width=len("COD COUNT = ")
         ws.column_dimensions["B"].width=len(str(user_name)+" ")
@@ -660,6 +679,10 @@ def create_excel(date, employee_data,cod_count,shipment_numbers, user_name):
         for row_num  ,value in enumerate(shipment_numbers,start=2):
             ws.cell(row=row_num,column=3).value=value
 
+        for row_num ,value in enumerate(reply_times,start=2):
+            ws.cell(row=row_num,column=5).value=value[0]
+            ws.cell(row=row_num,column=6).value=value[1]
+        
         
         if len(employee_data) == 0 :
             employee_data=[1]
