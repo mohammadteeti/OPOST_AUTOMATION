@@ -419,6 +419,7 @@ def get_employee_data_from_excel(input_path,driver):
         cod_count=0
         shipment_numbers=[]
         reply_times = []
+        pending_type= ""
         # Open the provided Excel file and read the B column from row 2 onward in the first sheet
         wb = openpyxl.load_workbook(path)
         ws = wb.active
@@ -538,6 +539,7 @@ def get_employee_data_from_excel(input_path,driver):
                             if is_first_time_driver_pen_detected:
                                 if name in pending_data[1] :# check_if_name_occures_in_pending_line(pending_data[1]): #'291لارا' in  pending_data[1]  or '296هبة' in  pending_data[1] or '290رند' in  pending_data[1] or '294حمزة' in  pending_data[1] or 'احمد295' in  pending_data[1] or 'متابعة عوالق' in  pending_data[1] :
                                     first_pending_of_employee=modify_time_if_before_T(pending_data[0])
+                                    pending_type=pending_data[5]
                                     is_first_time_employee_pen_detected=True
                                 #break
                     if is_first_time_employee_pen_detected: # no need to read the rest or row as the first pending variables are assigned
@@ -575,7 +577,7 @@ def get_employee_data_from_excel(input_path,driver):
                 time_difference_per_user.append(round(difference_in_minutes,2))
             
                 shipment_numbers.append(number)
-                reply_times.append((first_pending_of_employee,first_pending_of_driver)) #store the response times of both employee and driver for each number
+                reply_times.append((first_pending_of_employee,first_pending_of_driver,pending_type)) #store the response times of both employee and driver for each number
 
             
             except Exception as e:
@@ -682,7 +684,7 @@ def create_excel(date, employee_data,cod_count,shipment_numbers,reply_times, use
         for row_num ,value in enumerate(reply_times,start=2):
             ws.cell(row=row_num,column=5).value=value[0]
             ws.cell(row=row_num,column=6).value=value[1]
-        
+            ws.cell(row=row_num,column=7).value=value[2]
         
         if len(employee_data) == 0 :
             employee_data=[1]
