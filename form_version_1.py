@@ -265,6 +265,15 @@ def browsFile():
         path_box.delete(0,tk.END)
         path_box.insert(0,input_path)
 
+def browsMultiFiles():
+    global excel_filepaths_array
+    excel_filepaths_array = filedialog.askopenfilenames(filetypes=[("Excel Files","*.xlsx"),("All Files","*.*")])
+
+    if excel_filepaths_array:
+        path_box.delete(0,tk.END)
+        path_box.insert(0,excel_filepaths_array)
+        
+        
 
 def run_script ():
     global browserChoice
@@ -742,6 +751,22 @@ root.config(bg="#cceeff")
 file_frame = tk.Frame(root, padx=10, pady=10)
 file_frame.pack(fill=tk.X)
 file_frame.config(bg="#cceeff")
+
+selector_frame = tk.Frame(file_frame, padx=10, pady=10)
+selector_frame.pack(padx=5)
+selector_frame.config(bg="#cceeff")
+
+brows_mode_selector = tk.StringVar(value="single")  # Default to single file mode
+
+single_file_radio = tk.Radiobutton(selector_frame, text="Single File", variable=brows_mode_selector, value="single")
+single_file_radio.pack(padx=10)
+single_file_radio.config(bg="#cceeff")
+
+multiple_file_radio = tk.Radiobutton(selector_frame, text="Multiple Files", variable=brows_mode_selector, value="multiple")
+multiple_file_radio.pack(padx=10)
+multiple_file_radio.config(bg="#cceeff")
+
+
 browse_button = tk.Button(file_frame, text="Browse", command=browsFile)
 browse_button.pack(side=tk.LEFT, padx=5)
 
