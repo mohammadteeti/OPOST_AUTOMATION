@@ -534,12 +534,12 @@ def get_employee_data_from_excel(input_path,driver):
                             if pending_data[1].strip() == pending_data[3].strip():
                                 first_pending_of_driver=pending_data[0]
                                 is_first_time_driver_pen_detected=True
-                            
+                                pending_type=pending_data[5]
                         if not is_first_time_employee_pen_detected :
                             if is_first_time_driver_pen_detected:
                                 if name in pending_data[1] :# check_if_name_occures_in_pending_line(pending_data[1]): #'291لارا' in  pending_data[1]  or '296هبة' in  pending_data[1] or '290رند' in  pending_data[1] or '294حمزة' in  pending_data[1] or 'احمد295' in  pending_data[1] or 'متابعة عوالق' in  pending_data[1] :
                                     first_pending_of_employee=modify_time_if_before_T(pending_data[0])
-                                    pending_type=pending_data[5]
+                                    
                                     is_first_time_employee_pen_detected=True
                                 #break
                     if is_first_time_employee_pen_detected: # no need to read the rest or row as the first pending variables are assigned
