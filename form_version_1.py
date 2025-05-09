@@ -259,19 +259,12 @@ def start_edge_session(browser_version,debugging_string):
 
 def browsFile(): 
     global input_path
-    input_path = filedialog.askopenfilename(filetypes=[("Excel Files","*.xlsx"),("All Files","*.*")])
+    input_path = filedialog.askopenfilenames(filetypes=[("Excel Files","*.xlsx"),("All Files","*.*")])
 
     if input_path:
         path_box.delete(0,tk.END)
         path_box.insert(0,input_path)
 
-def browsMultiFiles():
-    global excel_filepaths_array
-    excel_filepaths_array = filedialog.askopenfilenames(filetypes=[("Excel Files","*.xlsx"),("All Files","*.*")])
-
-    if excel_filepaths_array:
-        path_box.delete(0,tk.END)
-        path_box.insert(0,excel_filepaths_array)
         
         
 
@@ -748,30 +741,15 @@ root.resizable(False, False)
 root.config(bg="#cceeff")
 
 # Create a frame for the file selection
-file_frame = tk.Frame(root, padx=10, pady=10)
-file_frame.pack(fill=tk.X)
-file_frame.config(bg="#cceeff")
+file_frame = tk.Frame(root, padx=10, pady=10, bd=2, relief=tk.SOLID)
+file_frame.pack(fill=tk.X, padx=10, pady=10)
 
-selector_frame = tk.Frame(file_frame, padx=10, pady=10)
-selector_frame.pack(padx=5)
-selector_frame.config(bg="#cceeff")
-
-brows_mode_selector = tk.StringVar(value="single")  # Default to single file mode
-
-single_file_radio = tk.Radiobutton(selector_frame, text="Single File", variable=brows_mode_selector, value="single")
-single_file_radio.pack(padx=10)
-single_file_radio.config(bg="#cceeff")
-
-multiple_file_radio = tk.Radiobutton(selector_frame, text="Multiple Files", variable=brows_mode_selector, value="multiple")
-multiple_file_radio.pack(padx=10)
-multiple_file_radio.config(bg="#cceeff")
-
-
-browse_button = tk.Button(file_frame, text="Browse", command=browsFile)
-browse_button.pack(side=tk.LEFT, padx=5)
+# Browse button and path display
+browse_button = tk.Button(file_frame, text="Brows Button", command=browsFile, width=12)
+browse_button.pack(side=tk.LEFT, padx=(0, 5))
 
 path_box = tk.Entry(file_frame, width=50)
-path_box.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+path_box.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
 # Create a frame for browser selection
 browser_frame = tk.Frame(root, padx=10, pady=10)
