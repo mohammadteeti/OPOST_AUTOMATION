@@ -10,7 +10,7 @@ import webbrowser
 import openpyxl
 from openpyxl.styles import PatternFill
 from openpyxl import Workbook
-
+from openpyxl.styles import Border, Side
 import time
 from datetime import datetime,timedelta
 
@@ -271,7 +271,7 @@ def browsFile():
 def run_script ():
     global browserChoice
     browserChoice= browser_var.get()
-    input_path =path_box.get()
+    #input_path =path_box.get()
     
 
 
@@ -401,20 +401,16 @@ def get_employee_data_from_excel(input_path,driver):
             
 
 
-    wb_input=openpyxl.load_workbook(str(input_path).strip(),data_only=True)
-
-    ws_input=wb_input.active
 
 
-    for i,row  in enumerate(ws_input): #skip first row (Headers)
+    for file  in input_path: #skip first row (Headers)
         if stop_event.is_set():
                 break
-        if i==0 :
-            continue
-        name =row[0].value
-        path= row[1].value + '.xlsx'
-        file_date =row[2].value
-        is_random=row[3].value
+            
+        name =os.path.basename(file).split(".")[0].split(" ")[1].strip() #get the name of the file without the extension
+        path=file
+        file_date =os.path.basename(file).split(".")[0].split(" ")[0].strip() #get the date from the file name
+        
         print (f'name : {name} , date : {file_date} , path : {path} , is_random : {is_random}')
         
         time_difference_per_user = [] 
@@ -510,7 +506,7 @@ def get_employee_data_from_excel(input_path,driver):
 
                 cod_pickup_in_page=0
                 for row in table_row:
-                    if "COD Pickup" in row.text:
+                    if "COD Pickup" in row.text and file_date in row.text: # add the date to the condition to avoid the COD status that is not related to the current date
                         print("COD Pickup found")
                         cod_pickup_in_page = cod_pickup_in_page+1
                     if cod_pickup_in_page >1 :
@@ -535,13 +531,14 @@ def get_employee_data_from_excel(input_path,driver):
                         if not is_first_time_driver_pen_detected:
                             if pending_data[1].strip() == pending_data[3].strip():
                                 first_pending_of_driver=pending_data[0]
+                                pending_type=pending_data[5]
                                 is_first_time_driver_pen_detected=True
                             
                         if not is_first_time_employee_pen_detected :
                             if is_first_time_driver_pen_detected:
                                 if name in pending_data[1] :# check_if_name_occures_in_pending_line(pending_data[1]): #'291لارا' in  pending_data[1]  or '296هبة' in  pending_data[1] or '290رند' in  pending_data[1] or '294حمزة' in  pending_data[1] or 'احمد295' in  pending_data[1] or 'متابعة عوالق' in  pending_data[1] :
                                     first_pending_of_employee=modify_time_if_before_T(pending_data[0])
-                                    pending_type=pending_data[5]
+                                    
                                     is_first_time_employee_pen_detected=True
                                 #break
                     if is_first_time_employee_pen_detected: # no need to read the rest or row as the first pending variables are assigned
@@ -590,6 +587,9 @@ def get_employee_data_from_excel(input_path,driver):
              
         
         #call function to create the results as excel file 
+        
+        
+        wb.close()
         create_excel(file_date, time_difference_per_user,cod_count,shipment_numbers,reply_times,name)
 
 
@@ -633,6 +633,15 @@ def modify_time_if_before_T(datetime_str):
     
 def create_excel(date, employee_data,cod_count,shipment_numbers,reply_times, user_name):
     try:
+        
+        # Define a thin solid border style
+        thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+)
+
         # Create a new workbook and select the active worksheet
         wb = Workbook()
         ws = wb.active
@@ -652,6 +661,7 @@ def create_excel(date, employee_data,cod_count,shipment_numbers,reply_times, use
         #write the header for the reply times
         ws['E1'] = "وقت الرد من الموظف"
         ws['F1'] = "وقت الرد من السائق"
+        ws['G1'] = "نوع العالق"
         
         ws["A1"].font = openpyxl.styles.Font(bold=True)
         ws["B1"].font = openpyxl.styles.Font(bold=True)
@@ -659,6 +669,16 @@ def create_excel(date, employee_data,cod_count,shipment_numbers,reply_times, use
         ws["D1"].font = openpyxl.styles.Font(bold=True)
         ws["E1"].font = openpyxl.styles.Font(bold=True)
         ws["F1"].font = openpyxl.styles.Font(bold=True)
+        ws["G1"].font = openpyxl.styles.Font(bold=True)
+        
+        ws["A1"].border = thin_border
+        ws["B1"].border = thin_border
+        ws["C1"].border = thin_border
+        ws["D1"].border = thin_border
+        ws["E1"].border = thin_border
+        ws["F1"].border = thin_border
+        ws["G1"].border = thin_border
+        
         #set columns widths 
         ws.column_dimensions["A"].width=len("COD COUNT = ")
         ws.column_dimensions["B"].width=len(str(user_name)+" ")
@@ -677,29 +697,39 @@ def create_excel(date, employee_data,cod_count,shipment_numbers,reply_times, use
             if value == 0 :
                 ws.cell(row=row_num,column=4).value="تم التسليم بدون عالق - لا تحسب في التقرير"
                 ws.cell(row=row_num,column=4).fill=green_fill
+                ws.cell(row=row_num,column=4).border = thin_border
                 cod_without_pending=cod_without_pending+1
-
+            ws.cell(row=row_num,column=2).border = thin_border
             
         for row_num  ,value in enumerate(shipment_numbers,start=2):
             ws.cell(row=row_num,column=3).value=value
-
+            ws.cell(row=row_num,column=3).border = thin_border
+            
         for row_num ,value in enumerate(reply_times,start=2):
             ws.cell(row=row_num,column=5).value=value[0]
             ws.cell(row=row_num,column=6).value=value[1]
             ws.cell(row=row_num,column=7).value=value[2]
-        
+            
+            ws.cell(row=row_num,column=5).border = thin_border
+            ws.cell(row=row_num,column=6).border = thin_border
+            ws.cell(row=row_num,column=7).border = thin_border
+            
         if len(employee_data) == 0 :
             employee_data=[1]
         ws.cell(row=len(employee_data)+3,column=1 ).value="Average = " 
+        ws.cell(row=len(employee_data)+3,column=1 ).border = thin_border
         try:
             ws.cell(row=len(employee_data)+3,column=2 ).value= round(sum(employee_data)/(len(employee_data)-cod_without_pending),2)
+            ws.cell(row=len(employee_data)+3,column=2 ).border = thin_border
         except ZeroDivisionError:
             ws.cell(row=len(employee_data)+3,column=2 ).value=0
             ws.cell(row=len(employee_data)+3,column=2 ).fill=red_fill
+            ws.cell(row=len(employee_data)+3,column=2 ).border = thin_border
             
         ws.cell(row=len(employee_data)+5,column=1 ).value="COD COUNT = " 
         ws.cell(row=len(employee_data)+5,column=2 ).value=cod_count
-
+        ws.cell(row=len(employee_data)+5,column=2 ).border = thin_border
+        ws.cell(row=len(employee_data)+5,column=1 ).border = thin_border
 
 
         # Save the workbook
@@ -724,6 +754,10 @@ def update_shift_time(value):
 def update_sample_number(value):
     global random_sample
     random_sample=value
+
+def update_is_random_list(value):
+    global is_random
+    is_random=value == "True"
 
 #####################################################################################################################################
 #####################################################################################################################################
@@ -770,29 +804,32 @@ edge_radio.pack(side=tk.LEFT, padx=10)
 
 
 # Create a frame for shift time selection
-shift_time_frame = tk.Frame(root, padx=10, pady=10)
+shift_time_frame = tk.Frame(root, padx=10, pady=10, bg="#cceeff")
 shift_time_frame.pack(fill=tk.X)
-shift_time_frame.config(bg="#cceeff")
-# Label for shift time
-shift_time_label = tk.Label(shift_time_frame, text="Shift Time Start (T):")
-shift_time_label.pack(side=tk.LEFT, padx=10)
 
-# Create a Tkinter variable with default value 9
+# Label and dropdown for shift time
+shift_time_label = tk.Label(shift_time_frame, text="Shift Time Start (T):", bg="#cceeff")
+shift_time_label.pack(side=tk.LEFT, padx=5)
+
 shift_time_var = tk.IntVar(value=9)
+shift_time_menu = tk.OptionMenu(shift_time_frame, shift_time_var, 9, 10, command=update_shift_time)
+shift_time_menu.pack(side=tk.LEFT, padx=5)
 
-# Dropdown list (OptionMenu) with values 9 and 10
-shift_time_menu = tk.OptionMenu(shift_time_frame, shift_time_var, 9, 10,command=update_shift_time)
-shift_time_menu.pack(side=tk.LEFT, padx=10)
+# Label and dropdown for is_random_sample
+is_random_sample_label = tk.Label(shift_time_frame, text="Take Random Sample", bg="#cceeff")
+is_random_sample_label.pack(side=tk.LEFT, padx=5)
 
-#create a random sample selector 
+is_random_sample = tk.StringVar(value="False")
+is_random_sample_menu = tk.OptionMenu(shift_time_frame, is_random_sample, "True", "False", command=update_is_random_list)
+is_random_sample_menu.pack(side=tk.LEFT, padx=5)
 
+# Label and dropdown for random sample size
+random_selector_label = tk.Label(shift_time_frame, text="Sample Size:", bg="#cceeff")
+random_selector_label.pack(side=tk.LEFT, padx=5)
 
-random_selector_label=tk.Label(shift_time_frame,text="Random Sample Of :")
-random_selector_label.pack(side=tk.LEFT,padx=10)
-
-default_random_sample=tk.IntVar(value=20)
-random_selector_menu = tk.OptionMenu(shift_time_frame,default_random_sample,5,10,15,20,25,30,command=update_sample_number)
-random_selector_menu.pack(side=tk.RIGHT,padx=10,fill=tk.X,expand=True)
+default_random_sample = tk.IntVar(value=5)
+random_selector_menu = tk.OptionMenu(shift_time_frame, default_random_sample, 5, 10, 15, 20, 25, 30, command=update_sample_number)
+random_selector_menu.pack(side=tk.LEFT, padx=5)
 
 
 
