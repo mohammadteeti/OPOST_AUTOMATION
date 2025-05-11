@@ -504,12 +504,9 @@ def get_employee_data_from_excel(input_path,driver):
                 # The logic below consists the results to the Pending and COD status types only, other status types are eventually ignored                                           
                 # there is a bug here where the readign start from above
 
-                cod_pickup_in_page=1
-                for row in table_row:
+                
+                for row in reversed(table_row):
                     if "COD Pickup" in row.text and file_date in row.text: # add the date to the condition to avoid the COD status that is not related to the current date
-                        print("COD Pickup found")
-                        print (f"COD Pickup Type : {row.text}")
-                        cod_pickup_in_page = cod_pickup_in_page+1
                         cod_count =cod_count+1
                         break
 
@@ -519,7 +516,6 @@ def get_employee_data_from_excel(input_path,driver):
 
                     
                     if  "Pending" in row.text and file_date in row.text:
-                        print ("pending status found")
                         td_elements = row.find_elements(By.CSS_SELECTOR, "td")
 
 
@@ -558,8 +554,6 @@ def get_employee_data_from_excel(input_path,driver):
                     time1=datetime.strptime("2000-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").time() 
                     time2=datetime.strptime("2000-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").time() 
                     
-                print(f"Time1 {time1}\n")
-                print(f"Time2 {time2}\n")
                 
                 # Convert the time components to timedelta objects 
                 time1_delta = timedelta(hours=time1.hour, minutes=time1.minute, seconds=time1.second)
