@@ -504,13 +504,13 @@ def get_employee_data_from_excel(input_path,driver):
                 # The logic below consists the results to the Pending and COD status types only, other status types are eventually ignored                                           
                 # there is a bug here where the readign start from above
 
-                cod_pickup_in_page=0
+                cod_pickup_in_page=1
                 for row in table_row:
                     if "COD Pickup" in row.text and file_date in row.text: # add the date to the condition to avoid the COD status that is not related to the current date
                         print("COD Pickup found")
+                        print (f"COD Pickup Type : {row.text}")
                         cod_pickup_in_page = cod_pickup_in_page+1
-                    if cod_pickup_in_page >1 :
-                        cod_count=cod_count+1
+                        cod_count =cod_count+1
                         break
 
                         
