@@ -49,6 +49,8 @@ random_sample=0
 stop_event =  threading.Event()
 
 
+        
+
 name=""
 
 browser_version=""
@@ -252,7 +254,7 @@ def start_edge_session(browser_version,debugging_string):
         light_label.config(background="#00FF00") 
         get_employee_data_from_excel(input_path,driver)
     except Exception as e:
-        print(f"Error starting Chrome session: {e}\n")
+        print(f"Error starting Edge session: {e}\n")
         light_label.config(background="#FF0000")
 ##########################################################################################################################################
 
@@ -271,24 +273,45 @@ def browsFile():
 def run_script ():
     global browserChoice
     browserChoice= browser_var.get()
+    employee_name=employee_name_var.get()
+    is_random=is_random_sample.get()
+    
+    random_sample=default_random_sample.get()
+    shift_time_T=shift_time_var.get()
+    
     #input_path =path_box.get()
     
 
-
+    
     if not browserChoice:
         messagebox.showerror("Error","Please Select Browser Type!")
         return
-    
+
     if not input_path : 
         messagebox.showerror("Error","Please Enter Employee Text File Path")
         return
-    
+
     if not entry_username.get():
         messagebox.showerror("Error","Please Enter UserName/Email of your  Optimus Account")
         return
     if not entry_password.get():
         messagebox.showerror("Error","Please Enter Password of your  Optimus Account")
         return
+
+    if not employee_name:
+        messagebox.showerror("Error","Please Select Employee Name")
+        return
+    if not is_random:
+        messagebox.showerror("Error","Please Select whether ypou want to take a random sample or not")
+        return
+    if is_random and (not random_sample):
+        messagebox.showerror("Error","Please Select the Random Sample Size")
+        return
+    if not shift_time_T:
+        messagebox.showerror("Error","Please Select the Shift Time")
+        return
+        
+    
     
     def main_processing_code():
         
@@ -407,7 +430,7 @@ def get_employee_data_from_excel(input_path,driver):
         if stop_event.is_set():
                 break
             
-        name =os.path.basename(file).split(".")[0].split(" ")[1].strip() #get the name of the file without the extension
+        name =employee_name#get the name of the file without the extension
         path=file
         file_date =os.path.basename(file).split(".")[0].split(" ")[0].strip() #get the date from the file name
         
@@ -759,14 +782,32 @@ def update_is_random_list(value):
 
 ##################################### Create Main Screen Window with widgets ########################################################
 
-
-
+def update_employee_name(value):
+    global employee_name
+    employee_name=value
+    
+    
+def read_employee_names_from_txt_file(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            lines = file.readlines()
+            names = [line.strip() for line in lines]
+            return names
+    except FileNotFoundError:
+        print(f"File {file_path} not found.")
+        return []
+    
 # Create the main application window
 root = tk.Tk()
 root.title("Pending Response Monitor")
 root.geometry("600x600")
 root.resizable(False, False)
 root.config(bg="#cceeff")
+
+global employee_name
+global is_random_sample
+global default_random_sample
+global shift_time_var
 
 # Create a frame for the file selection
 file_frame = tk.Frame(root, padx=10, pady=10, bd=2, relief=tk.SOLID)
@@ -798,7 +839,7 @@ edge_radio.pack(side=tk.LEFT, padx=10)
 
 
 # Create a frame for shift time selection
-shift_time_frame = tk.Frame(root, padx=10, pady=10, bg="#cceeff")
+shift_time_frame = tk.Frame(root, padx=10, pady=10, bg="#cceeff",width=100)
 shift_time_frame.pack(fill=tk.X)
 
 # Label and dropdown for shift time
@@ -825,6 +866,22 @@ default_random_sample = tk.IntVar(value=5)
 random_selector_menu = tk.OptionMenu(shift_time_frame, default_random_sample, 5, 10, 15, 20, 25, 30, command=update_sample_number)
 random_selector_menu.pack(side=tk.LEFT, padx=5)
 
+# label and dropdown for Employee Names
+
+employee_frame = tk.Frame(root, bg="#cceeff")
+employee_frame.pack(pady=(0, 10))  # top margin 0, bottom 10
+
+employee_name_label = tk.Label(employee_frame, text="Employee Name:", bg="#cceeff")
+employee_name_label.pack(side=tk.LEFT, padx=5)
+
+employee_name_var = tk.StringVar(value="حمزة - متابعة عوالق 91")
+employee_name_menu = tk.OptionMenu(
+    employee_frame,
+    employee_name_var,
+    *read_employee_names_from_txt_file("names.txt"),
+    command=update_employee_name
+)
+employee_name_menu.pack(side=tk.LEFT, padx=5)
 
 
 #create login frame and controls 
