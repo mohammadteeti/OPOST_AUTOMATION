@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from tkinter import  filedialog , messagebox    
 import sys
@@ -272,8 +271,13 @@ def browsFile():
 
 def run_script ():
     global browserChoice
+    
+    global is_random
+    global random_sample
+    global shift_time_T
+    
     browserChoice= browser_var.get()
-    employee_name=employee_name_var.get()
+    
     is_random=is_random_sample.get()
     
     random_sample=default_random_sample.get()
@@ -298,11 +302,9 @@ def run_script ():
         messagebox.showerror("Error","Please Enter Password of your  Optimus Account")
         return
 
-    if not employee_name:
-        messagebox.showerror("Error","Please Select Employee Name")
-        return
+ 
     if not is_random:
-        messagebox.showerror("Error","Please Select whether ypou want to take a random sample or not")
+        messagebox.showerror("Error","Please Select whether you want to take a random sample or not")
         return
     if is_random and (not random_sample):
         messagebox.showerror("Error","Please Select the Random Sample Size")
@@ -430,7 +432,7 @@ def get_employee_data_from_excel(input_path,driver):
         if stop_event.is_set():
                 break
             
-        name =employee_name#get the name of the file without the extension
+        name =get_name_from_excel_name(file)#get the name of the file without the extension
         path=file
         file_date =os.path.basename(file).split(".")[0].split(" ")[0].strip() #get the date from the file name
         
@@ -450,7 +452,7 @@ def get_employee_data_from_excel(input_path,driver):
             if cell.value:
                 tracking_numbers.append(cell.value)
 
-        if is_random==1:
+        if is_random.lower()=="true":
                 print(f"Random of {random_sample} Samples are Chosen\n")
                 tracking_numbers= get_random_tracking_numbers(tracking_numbers) 
         else:
@@ -608,7 +610,13 @@ def get_employee_data_from_excel(input_path,driver):
         
         wb.close()
         create_excel(file_date, time_difference_per_user,cod_count,shipment_numbers,reply_times,name)
-
+    driver.quit()
+    stop_event.set()
+    kill_debugging_chrome()
+    kill_debugging_edge()
+    kill_process_by_name("msedgewebview2.exe")
+    
+    
 
 ############ Auxilary Function #################
 
@@ -782,10 +790,24 @@ def update_is_random_list(value):
 
 ##################################### Create Main Screen Window with widgets ########################################################
 
-def update_employee_name(value):
-    global employee_name
-    employee_name=value
+def get_name_from_excel_name(excel_path):
+    excel_name = os.path.basename(excel_path)
+    name = os.path.splitext(excel_name)[0]  # Get the file name without the extension
+    name=name.split(" ")[1].strip() #get the name from the file name because the file name is in the format of "name date.xlsx"
+    employee_names=[]
+    with open("names.txt", "r", encoding="utf-8") as file:
+        employee_names = file.readlines()
+        employee_names = [name.strip() for name in employee_names]
     
+    file.close()
+    for n in employee_names:
+        print (n)
+        if name in n :
+            name=n
+            break
+    print(f"Employee Name : {name}")
+    return name
+
     
 def read_employee_names_from_txt_file(file_path):
     try:
@@ -804,7 +826,7 @@ root.geometry("600x600")
 root.resizable(False, False)
 root.config(bg="#cceeff")
 
-global employee_name
+
 global is_random_sample
 global default_random_sample
 global shift_time_var
@@ -866,22 +888,6 @@ default_random_sample = tk.IntVar(value=5)
 random_selector_menu = tk.OptionMenu(shift_time_frame, default_random_sample, 5, 10, 15, 20, 25, 30, command=update_sample_number)
 random_selector_menu.pack(side=tk.LEFT, padx=5)
 
-# label and dropdown for Employee Names
-
-employee_frame = tk.Frame(root, bg="#cceeff")
-employee_frame.pack(pady=(0, 10))  # top margin 0, bottom 10
-
-employee_name_label = tk.Label(employee_frame, text="Employee Name:", bg="#cceeff")
-employee_name_label.pack(side=tk.LEFT, padx=5)
-
-employee_name_var = tk.StringVar(value="حمزة - متابعة عوالق 91")
-employee_name_menu = tk.OptionMenu(
-    employee_frame,
-    employee_name_var,
-    *read_employee_names_from_txt_file("names.txt"),
-    command=update_employee_name
-)
-employee_name_menu.pack(side=tk.LEFT, padx=5)
 
 
 #create login frame and controls 
@@ -931,6 +937,8 @@ log_text.pack(fill=tk.BOTH, expand=True)
 
 # Redirect print statements to the log screen
 sys.stdout = RedirectOutput(log_text)
+
+
 
 # Start the Tkinter event loop
 root.mainloop()
