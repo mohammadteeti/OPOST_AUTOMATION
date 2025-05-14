@@ -44,15 +44,23 @@ This provides flexibility to users with different preferences and technical expe
 
 - **Login to OPOST System**
 
-  The program uses OPOST user credentials to automatically log in, streamlining the login process.
+  The program uses OPOST user credentials to log in, streamlining the login process automatically.
 
 - **Supports Multiple Browsers**
 
-  The program works with both Edge and Chrome, offering a selection mechanism to choose the browser type. This prevents browser overload, allowing users to perform other tasks on one browser while running the process in another.
+  The program works with both Edge and Chrome, offering a selection mechanism for choosing the browser type. This prevents browser overload, allowing users to perform other tasks on one browser while running the process in another.
+
+- **Version Matching**
+  
+    The Program checks for browser version and assigns the compatible driver version using driver managers for both Chrome and Edge
+
+- **Wide Range of Shipment Samples**
+
+  The Program allows the user to choose between Full File mode and Sample Mode ,samples can be selected from 5 up to 30 sample per file
 
 - **Logging Mechanism for Tracking Flow and Errors**
   
-    A logging window continuously streams the flow of the process, displaying printed outputs as well as stack traces for error tracking. This allows for real-time monitoring and troubleshooting of the system's activities. 
+    A logging window continuously streams the flow of the process, displaying printed outputs, as well as stack, traces for error tracking. This allows for real-time monitoring and troubleshooting of the system's activities. 
 - **Start/Stop Features**
 
     The system allows for multiple start and stop actions during runtime, preventing fatal crashes and ensuring smooth operation even if the process needs to be paused or restarted.
@@ -68,11 +76,14 @@ This provides flexibility to users with different preferences and technical expe
 
 
 
+# Image :
+
+![GUI FORM](https://github.com/mohammadteeti/OPOST_AUTOMATION/blob/gui_form_COD/Media/Screen%20Shot.JPG)
 
 
+# Video :
 
-
-
+https://github.com/user-attachments/assets/29d54762-e824-4ca7-986f-ff9195412eb6
 
 
 
