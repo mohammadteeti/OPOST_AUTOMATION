@@ -33,6 +33,10 @@ import random
 import winsound
 import shutil
 
+import tkcalendar
+from tkcalendar import Calendar
+from datetime import date
+
 red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 green_fill =PatternFill(start_color="00FF00",end_color="00FF00",fill_type="solid")
 
@@ -270,6 +274,7 @@ def browsFile():
         
 
 def run_script ():
+    
     global browserChoice
     
     global is_random
@@ -434,7 +439,7 @@ def get_employee_data_from_excel(input_path,driver):
             
         name =get_name_from_excel_name(file)#get the name of the file without the extension
         path=file
-        file_date =os.path.basename(file).split(".")[0].split(" ")[0].strip() #get the date from the file name
+        file_date =get_date() #get the date from the file name
         
         print (f'name : {name} , date : {file_date} , path : {path} , is_random : {is_random}')
         
@@ -793,7 +798,7 @@ def update_is_random_list(value):
 def get_name_from_excel_name(excel_path):
     excel_name = os.path.basename(excel_path)
     name = os.path.splitext(excel_name)[0]  # Get the file name without the extension
-    name=name.split(" ")[1].strip() #get the name from the file name because the file name is in the format of "name date.xlsx"
+    #name=name.split(" ")[1].strip() #get the name from the file name because the file name is in the format of "name date.xlsx"
     employee_names=[]
     with open("names.txt", "r", encoding="utf-8") as file:
         employee_names = file.readlines()
@@ -819,10 +824,19 @@ def read_employee_names_from_txt_file(file_path):
         print(f"File {file_path} not found.")
         return []
     
+    
+
+def get_date():
+    selected_date = cal.get_date()
+    # Store it in a variable or use it as needed
+    global chosen_date
+    chosen_date = selected_date
+    return str(chosen_date).replace("/","-") #replace the / with - to avoid any issues in the file name
+
 # Create the main application window
 root = tk.Tk()
 root.title("Pending Response Monitor")
-root.geometry("600x600")
+root.geometry("800x800")
 root.resizable(False, False)
 root.config(bg="#cceeff")
 
@@ -850,7 +864,7 @@ browser_frame.config(bg="#cceeff")
 light_label=tk.Label(file_frame,text="",width=3,height=3,background="#FF0000")
 light_label.pack(padx=20)
 # Create a Tkinter variable
-browser_var = tk.StringVar(value="xxx")  # Set to a value that doesn't match any button
+browser_var = tk.StringVar(value="Chrome")  # Set to a value that doesn't match any button
 
 chrome_radio = tk.Radiobutton(browser_frame, text="Chrome", variable=browser_var, value="Chrome")
 chrome_radio.pack(side=tk.LEFT, padx=10)
@@ -861,7 +875,7 @@ edge_radio.pack(side=tk.LEFT, padx=10)
 
 
 # Create a frame for shift time selection
-shift_time_frame = tk.Frame(root, padx=10, pady=10, bg="#cceeff",width=100)
+shift_time_frame = tk.Frame(root, padx=10, pady=5, bg="#cceeff",width=100)
 shift_time_frame.pack(fill=tk.X)
 
 # Label and dropdown for shift time
@@ -880,6 +894,24 @@ is_random_sample = tk.StringVar(value="False")
 is_random_sample_menu = tk.OptionMenu(shift_time_frame, is_random_sample, "True", "False", command=update_is_random_list)
 is_random_sample_menu.pack(side=tk.LEFT, padx=5)
 
+#add calendar date picker here
+# Today's date
+today = date.today()
+
+# Calendar widget with today's date selected
+cal = Calendar(
+    shift_time_frame,
+    selectmode='day',
+    year=today.year,
+    month=today.month,
+    day=today.day,
+    date_pattern='yyyy-mm-dd'
+        
+)
+
+cal.pack(pady=2,side=tk.RIGHT)
+
+
 # Label and dropdown for random sample size
 random_selector_label = tk.Label(shift_time_frame, text="Sample Size:", bg="#cceeff")
 random_selector_label.pack(side=tk.LEFT, padx=5)
@@ -894,7 +926,7 @@ random_selector_menu.pack(side=tk.LEFT, padx=5)
 
 # Create login login_frame
 login_frame = tk.Frame(root, padx=10, pady=2)
-login_frame.pack(pady=20)
+login_frame.pack(pady=10)
 login_frame.config(bg="#cceeff")
 # Username label and entry
 label_username = tk.Label(login_frame, text="Username:")
