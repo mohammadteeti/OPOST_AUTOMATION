@@ -78,7 +78,7 @@ This provides flexibility to users with different preferences and technical expe
 
 # Image :
 
-![GUI FORM](https://github.com/mohammadteeti/OPOST_AUTOMATION/blob/gui_form_COD/Media/Screen%20Shot.JPG)
+![GUI FORM](https://github.com/mohammadteeti/OPOST_AUTOMATION/blob/gui_branch_multiselect/Media/Screen%20Shot.JPG)
 
 
 # Video :
