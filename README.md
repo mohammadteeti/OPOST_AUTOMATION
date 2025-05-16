@@ -1,10 +1,10 @@
 # OPOST AUTOMATION
 
-Automate opost reporting of pending follow up , web scrapping project 
+Automate Opost reporting of pending follow-up, web scraping project 
 
 ## OverView
 
-In opost system the pending shipments must be actively monitored and solved within a short timeframe 
+In opost system, the pending shipments must be actively monitored and solved within a short timeframe 
 
 A team of employees frequently monitors pending shipments in the system to ensure fast delivery.
 At the end of the day, the pending manager must submit a report on each employee.
@@ -56,22 +56,26 @@ This provides flexibility to users with different preferences and technical expe
 
 - **Wide Range of Shipment Samples**
 
-  The Program allows the user to choose between Full File mode and Sample Mode ,samples can be selected from 5 up to 30 sample per file
+  The Program allows the user to choose between Full File mode and Sample Mode, Samples can be selected from 5 up to 30 samples per file
 
 - **Date Picker**
 
-  The Program allows the user to manually select what date to work on , assuming the shipment is abelto be pendign for several days
+  The Program allows the user to manually select what date to work on, assuming the shipment can be pending for several days
   
 - **Logging Mechanism for Tracking Flow and Errors**
   
-    A logging window continuously streams the flow of the process, displaying printed outputs, as well as stack, traces for error tracking. This allows for real-time monitoring and troubleshooting of the system's activities. 
+    A logging window continuously streams the flow of the process, displaying printed outputs and stack traces for error tracking. This allows for real-time monitoring and troubleshooting of the system's activities. 
 - **Start/Stop Features**
 
-    The system allows for multiple start and stop actions during runtime, preventing fatal crashes and ensuring smooth operation even if the process needs to be paused or restarted.
+    The system allows multiple start and stop actions during runtime, preventing fatal crashes and ensuring smooth operation even if the process needs to be paused or restarted.
   
 - **Configurations File**
 
     The code relies on a .cfg configuration file to initiate the browser in different modes and on various hosts, enabling multiple running scenarios and providing flexibility for different use cases.
+
+- **Detailed Output Excel Reports**
+
+    The Program yields well-designed output tables containing Employee name and date, response Times, pending types, and calculated pending average and COD count
   
 - **ٍSimple Notification System**
 
@@ -85,7 +89,7 @@ This provides flexibility to users with different preferences and technical expe
 ![GUI FORM](https://github.com/mohammadteeti/OPOST_AUTOMATION/blob/gui_branch_multiselect/Media/Screen%20Shot.JPG)
 
 
-# Video : (The video was taken on early version of the program)
+# Video : (The video was taken on an early version of the program)
 
 https://github.com/user-attachments/assets/29d54762-e824-4ca7-986f-ff9195412eb6
 
