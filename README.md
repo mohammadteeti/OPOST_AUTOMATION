@@ -41,7 +41,7 @@ This provides flexibility to users with different preferences and technical expe
 - **Browsing Files for Different Employees**
 
   The program allows the user to easily select the Excel file they wish to work with, eliminating the need for manually entering excessive data.
-
+  It also allows for multiple file selection (Group Operation)
 - **Login to OPOST System**
 
   The program uses OPOST user credentials to log in, streamlining the login process automatically.
@@ -58,6 +58,10 @@ This provides flexibility to users with different preferences and technical expe
 
   The Program allows the user to choose between Full File mode and Sample Mode ,samples can be selected from 5 up to 30 sample per file
 
+- **Date Picker**
+
+  The Program allows the user to manually select what date to work on , assuming the shipment is abelto be pendign for several days
+  
 - **Logging Mechanism for Tracking Flow and Errors**
   
     A logging window continuously streams the flow of the process, displaying printed outputs, as well as stack, traces for error tracking. This allows for real-time monitoring and troubleshooting of the system's activities. 
@@ -83,8 +87,7 @@ This provides flexibility to users with different preferences and technical expe
 
 # Video :
 
-https://github.com/user-attachments/assets/ee474d1a-61b1-4d68-8fd3-9403f8e7b7ff
-
+https://github.com/user-attachments/assets/29d54762-e824-4ca7-986f-ff9195412eb6
 
 
 
