@@ -85,7 +85,7 @@ This provides flexibility to users with different preferences and technical expe
 ![GUI FORM](https://github.com/mohammadteeti/OPOST_AUTOMATION/blob/gui_branch_multiselect/Media/Screen%20Shot.JPG)
 
 
-# Video :
+# Video : (The video was taken on early version of the program)
 
 https://github.com/user-attachments/assets/29d54762-e824-4ca7-986f-ff9195412eb6
 
